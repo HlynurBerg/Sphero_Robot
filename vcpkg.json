@@ -1,7 +1,3 @@
 {
-  "dependencies": [
-    "boost-asio",
-    "opencv",
-    "nlohmann-json"
-  ]
+  "dependencies" : [ "boost-asio", "opencv", "nlohmann-json", "sdl2"]
 }
