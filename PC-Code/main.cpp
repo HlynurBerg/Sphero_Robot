@@ -1,7 +1,6 @@
 #include <iostream>
 #include <SDL.h>
 
-
 struct TankSteering {
     float leftBelt;
     float rightBelt;
@@ -69,6 +68,9 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
         steering.rightBelt = steering.rightBelt/abs(steering.rightBelt);
     }
 
+    // Convert to RawMotorModesEnum value range
+    steering.leftBelt = steering.leftBelt*255;
+    steering.rightBelt = steering.rightBelt*255;
 
     return steering;
 }
