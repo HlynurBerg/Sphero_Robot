@@ -1,4 +1,10 @@
-add_executable(main main.cpp
+cmake_minimum_required(VERSION 3.26)
+project(Sphero_Robot)
+set(CMAKE_CXX_STANDARD 20)
+
+
+add_executable(Sphero_Robot
+        main.cpp
         src/controllers/motorcontroller.cpp
         src/sensors/sensorreader.cpp
         src/comms/communicationhandler.cpp
@@ -7,4 +13,20 @@ add_executable(main main.cpp
         include/sensors/sensorreader.hpp
         tests/test_communicationhandler.cpp
         tests/test_motorcontroller.cpp
-        tests/test_sensorreader.cpp)
+        tests/test_sensorreader.cpp
+)
+
+
+
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(OpenCV CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
+
+
+target_link_libraries(Sphero_Robot PRIVATE
+        Boost::boost Boost::system
+        nlohmann_json nlohmann_json::nlohmann_json
+        opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs
+        SDL2::SDL2 SDL2::SDL2main
+)
