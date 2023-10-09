@@ -48,13 +48,13 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     }
 
     // Normalizing
-    if (steering.leftBelt > steering.rightBelt) {
-        steering.rightBelt = steering.rightBelt/steering.leftBelt;
-        steering.leftBelt = steering.leftBelt/steering.leftBelt;
+    if (abs(steering.leftBelt) > abs(steering.rightBelt)) {
+        steering.rightBelt = steering.rightBelt/abs(steering.leftBelt);
+        steering.leftBelt = steering.leftBelt/abs(steering.leftBelt);
     }
-    else{
-        steering.leftBelt = steering.leftBelt/steering.rightBelt;
-        steering.rightBelt = steering.rightBelt/steering.rightBelt;
+    else {
+        steering.leftBelt = steering.leftBelt/abs(steering.rightBelt);
+        steering.rightBelt = steering.rightBelt/abs(steering.rightBelt);
     }
 
     return steering;
