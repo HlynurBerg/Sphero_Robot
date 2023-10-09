@@ -19,6 +19,8 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     //Tune this variable to tune steering strength while driving
     float steer = 0.5;
 
+    float speed = 0.3;
+
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
 
@@ -50,6 +52,7 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
 
         // Check if the magnitude is greater than the deadzone
         if (magnitude > 15000) {
+            //TODO:figure out why y is inverted
             steering.leftBelt = y + steer*x;
             steering.rightBelt = y - steer*x;
         }
@@ -69,8 +72,8 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     }
 
     // Convert to RawMotorModesEnum value range
-    steering.leftBelt = steering.leftBelt*255;
-    steering.rightBelt = steering.rightBelt*255;
+    steering.leftBelt = round(steering.leftBelt*255*speed);
+    steering.rightBelt = round(steering.rightBelt*255*speed);
 
     return steering;
 }
