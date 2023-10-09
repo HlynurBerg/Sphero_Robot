@@ -8,45 +8,57 @@ struct TankSteering {
 };
 
 TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick) {
+
     TankSteering steering = {0.0, 0.0};
 
+    //Checking keypresses
     bool isUpPressed = keyboardState[SDL_SCANCODE_W] || keyboardState[SDL_SCANCODE_UP];
     bool isDownPressed = keyboardState[SDL_SCANCODE_S] || keyboardState[SDL_SCANCODE_DOWN];
     bool isLeftPressed = keyboardState[SDL_SCANCODE_A] || keyboardState[SDL_SCANCODE_LEFT];
     bool isRightPressed = keyboardState[SDL_SCANCODE_D] || keyboardState[SDL_SCANCODE_RIGHT];
 
-    //TODO: TEST THIS!!!
-    if(joystick) {
-        int x = SDL_JoystickGetAxis(joystick, 0); // Left thumbstick horizontal axis
-        int y = SDL_JoystickGetAxis(joystick, 1); // Left thumbstick vertical axis
-
-        isUpPressed |= y < -16000;   // Threshold to consider as input
-        isDownPressed |= y > 16000;  // TODO: Make seperate logic for controller, no hard limits on input
-        isLeftPressed |= x < -16000;
-        isRightPressed |= x > 16000;
-    }
-
     //Tune this variable to tune steering strength while driving
     float steer = 0.5;
 
-    // Adding up inputs
-    if (isUpPressed) {
-        steering.leftBelt++;
-        steering.rightBelt++;
-    }
-    if (isDownPressed) {
-        steering.leftBelt--;
-        steering.rightBelt--;
-    }
-    if (isLeftPressed) {
-        steering.leftBelt = steering.leftBelt - steer;
-        steering.rightBelt = steering.rightBelt + steer;
-    }
-    if (isRightPressed) {
-        steering.leftBelt = steering.leftBelt + steer;
-        steering.rightBelt = steering.rightBelt - steer;
+    //KBM inputs
+    if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
+
+        // Adding up inputs
+        if (isUpPressed) {
+            steering.leftBelt++;
+            steering.rightBelt++;
+        }
+        if (isDownPressed) {
+            steering.leftBelt--;
+            steering.rightBelt--;
+        }
+        if (isLeftPressed) {
+            steering.leftBelt = steering.leftBelt - steer;
+            steering.rightBelt = steering.rightBelt + steer;
+        }
+        if (isRightPressed) {
+            steering.leftBelt = steering.leftBelt + steer;
+            steering.rightBelt = steering.rightBelt - steer;
+        }
     }
 
+    //Joystick input
+    else {
+        int x = SDL_JoystickGetAxis(joystick, 0); // Left thumbstick horizontal axis
+        int y = SDL_JoystickGetAxis(joystick, 1); // Left thumbstick vertical axis
+
+        double magnitude = sqrt(x * x + y * y);
+
+        // Check if the magnitude is greater than the deadzone
+        if (magnitude > 15000) {
+            steering.leftBelt = y + steer*x;
+            steering.rightBelt = y - steer*x;
+        }
+        else {
+            steering.leftBelt = 0;
+            steering.rightBelt = 0;
+        }
+    }
     // Normalizing
     if (abs(steering.leftBelt) > abs(steering.rightBelt)) {
         steering.rightBelt = steering.rightBelt/abs(steering.leftBelt);
@@ -56,6 +68,7 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
         steering.leftBelt = steering.leftBelt/abs(steering.rightBelt);
         steering.rightBelt = steering.rightBelt/abs(steering.rightBelt);
     }
+
 
     return steering;
 }
