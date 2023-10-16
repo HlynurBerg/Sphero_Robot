@@ -3,6 +3,7 @@ project(Sphero_Robot)
 set(CMAKE_CXX_STANDARD 20)
 
 
+
 add_executable(Sphero_Robot
         main.cpp
         src/controllers/motorcontroller.cpp
@@ -14,6 +15,9 @@ add_executable(Sphero_Robot
         tests/test_communicationhandler.cpp
         tests/test_motorcontroller.cpp
         tests/test_sensorreader.cpp
+        include/comms/client/tcp_client.hpp
+        include/comms/server/socket_handler.hpp
+        include/comms/server/tcp_server.hpp
 )
 
 
@@ -30,3 +34,6 @@ target_link_libraries(Sphero_Robot PRIVATE
         opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs
         SDL2::SDL2 SDL2::SDL2main
 )
+
+add_subdirectory(src)
+add_subdirectory(tests)
