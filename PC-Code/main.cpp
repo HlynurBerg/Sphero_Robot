@@ -18,8 +18,10 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
 
     //Tune this variable to tune steering strength while driving
     float steer = 0.5;
-
-    float speed = 0.3;
+    //Max speed of the robot
+    float maxSpeed = 0.3;
+    //Tilt of the joystick
+    float inputStrength = 1;
 
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
@@ -45,16 +47,22 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
 
     //Joystick input
     else {
-        int x = SDL_JoystickGetAxis(joystick, 0); // Left thumbstick horizontal axis
-        int y = SDL_JoystickGetAxis(joystick, 1); // Left thumbstick vertical axis
+        int x = SDL_JoystickGetAxis(joystick, 0); // Left joystick horizontal axis (left is -32768, right is 32767)
+        int y = SDL_JoystickGetAxis(joystick, 1); // Left joystick vertical axis (up is -32768, down is 32767)
 
-        double magnitude = sqrt(x * x + y * y);
+        //Joystick has a square sensor, but a round physical limit. At som points, the max value of the sensor
+        // is exceeded so detail is lost. In order to compensate for this, we draw a smaller circle inside
+        // the square sensor, and consider everything outside the circle to be at maximum input strength.
+        inputStrength = sqrt(x * x + y * y)/32768;
+
+        if (inputStrength > 1) {
+            inputStrength = 1;
+        }
 
         // Check if the magnitude is greater than the deadzone
-        if (magnitude > 15000) {
-            //TODO:figure out why y is inverted
-            steering.leftBelt = y + steer*x;
-            steering.rightBelt = y - steer*x;
+        if (inputStrength > 0.2) {
+            steering.leftBelt = -y + steer*x;
+            steering.rightBelt = -y - steer*x;
         }
         else {
             steering.leftBelt = 0;
@@ -72,8 +80,8 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     }
 
     // Convert to RawMotorModesEnum value range
-    steering.leftBelt = round(steering.leftBelt*255*speed);
-    steering.rightBelt = round(steering.rightBelt*255*speed);
+    steering.leftBelt = round(steering.leftBelt*255*maxSpeed*inputStrength);
+    steering.rightBelt = round(steering.rightBelt*255*maxSpeed*inputStrength);
 
     return steering;
 }
