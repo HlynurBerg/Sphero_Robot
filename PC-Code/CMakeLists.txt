@@ -1,3 +1,4 @@
+set(Boost_NO_WARN_NEW_VERSIONS 1)
 
 set(HEADERS
         include/comms/communicationhandler.hpp
@@ -17,6 +18,7 @@ add_executable(Sphero_Robot
         include/comms/server/socket_handler.hpp
         include/comms/server/tcp_server.hpp
         include/comms/client/tcp_client.hpp
+        tests/test_tcp_client.cpp
 )
 
 
@@ -28,9 +30,6 @@ find_package(SDL2 CONFIG REQUIRED)
 
 
 target_link_libraries(Sphero_Robot PRIVATE
-        Boost::boost Boost::system
-        nlohmann_json nlohmann_json::nlohmann_json
-        opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs
         SDL2::SDL2 SDL2::SDL2main
 )
 
