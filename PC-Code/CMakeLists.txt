@@ -1,14 +1,15 @@
-cmake_minimum_required(VERSION 3.26)
-project(Sphero_Robot)
-set(CMAKE_CXX_STANDARD 20)
 
+set(HEADERS
+        include/comms/communicationhandler.hpp
+        include/controllers/motorcontroller.hpp
+        include/sensors/sensorreader.hpp
+        include/comms/client/tcp_client.hpp
+        )
 
 add_executable(Sphero_Robot
         main.cpp
         src/controllers/motorcontroller.cpp
         src/sensors/sensorreader.cpp
-        include/comms/communicationhandler.hpp
-        include/controllers/motorcontroller.hpp
         include/sensors/sensorreader.hpp
         tests/test_communicationhandler.cpp
         tests/test_motorcontroller.cpp

@@ -1,5 +1,6 @@
 // include the tcp_client.hpp file from the client folder in the comms library
-#include "comms/tcp_client.hpp"
+#include "comms/client/tcp_client.hpp"
+
 
 int main(int argc, char **argv) {
 

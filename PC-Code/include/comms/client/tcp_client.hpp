@@ -11,7 +11,8 @@
 #include <iostream>
 #include <string>
 
-#include "communicationhandler.hpp"
+#include "comms/communicationhandler.hpp"
+
 
 using boost::asio::ip::tcp;
 
