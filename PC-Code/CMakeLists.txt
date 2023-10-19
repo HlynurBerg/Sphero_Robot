@@ -1,5 +1,11 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 
+OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
+
+IF (MSVC)
+        add_compile_definitions("_WIN32_WINNT=0x0601")
+ENDIF()
+
 set(HEADERS
         include/comms/communicationhandler.hpp
         include/controllers/motorcontroller.hpp
@@ -31,7 +37,21 @@ find_package(SDL2 CONFIG REQUIRED)
 
 target_link_libraries(Sphero_Robot PRIVATE
         SDL2::SDL2 SDL2::SDL2main
+
 )
 
 add_subdirectory(src)
-add_subdirectory(tests)
+
+IF(NETWORKING_BUILD_TESTS)
+        include(FetchContent)
+
+        FetchContent_Declare(
+                Catch2
+                GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+                GIT_TAG v2.13.4
+        )
+        FetchContent_MakeAvailable(Catch2)
+
+        enable_testing()
+        add_subdirectory(tests)
+ENDIF()
