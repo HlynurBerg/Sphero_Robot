@@ -2,13 +2,13 @@
 #include <SDL.h>
 
 struct TankSteering {
-    float leftBelt;
-    float rightBelt;
+    int leftBelt;
+    int rightBelt;
 };
 
 TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick) {
 
-    TankSteering steering = {0.0, 0.0};
+    float leftBeltFloat = 0.0, rightBeltFloat = 0.0;
 
     //Checking keypresses
     bool isUpPressed = keyboardState[SDL_SCANCODE_W] || keyboardState[SDL_SCANCODE_UP];
@@ -23,65 +23,68 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     //Tilt of the joystick
     float inputStrength = 1;
 
+    bool inputReceived = false;
+
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
+        inputReceived = true;
 
         // Adding up inputs
         if (isUpPressed) {
-            steering.leftBelt++;
-            steering.rightBelt++;
+            leftBeltFloat++;
+            rightBeltFloat++;
         }
         if (isDownPressed) {
-            steering.leftBelt--;
-            steering.rightBelt--;
+            leftBeltFloat--;
+            rightBeltFloat--;
         }
         if (isLeftPressed) {
-            steering.leftBelt = steering.leftBelt - steer;
-            steering.rightBelt = steering.rightBelt + steer;
+            leftBeltFloat = leftBeltFloat - steer;
+            rightBeltFloat = rightBeltFloat + steer;
         }
         if (isRightPressed) {
-            steering.leftBelt = steering.leftBelt + steer;
-            steering.rightBelt = steering.rightBelt - steer;
+            leftBeltFloat = leftBeltFloat + steer;
+            rightBeltFloat = rightBeltFloat - steer;
         }
     }
 
     //Joystick input
     else {
-        int x = SDL_JoystickGetAxis(joystick, 0); // Left joystick horizontal axis (left is -32768, right is 32767)
-        int y = SDL_JoystickGetAxis(joystick, 1); // Left joystick vertical axis (up is -32768, down is 32767)
+        int x = SDL_JoystickGetAxis(joystick, 0);
+        int y = SDL_JoystickGetAxis(joystick, 1);
 
-        //Joystick has a square sensor, but a round physical limit. At som points, the max value of the sensor
-        // is exceeded so detail is lost. In order to compensate for this, we draw a smaller circle inside
-        // the square sensor, and consider everything outside the circle to be at maximum input strength.
         inputStrength = sqrt(x * x + y * y)/32768;
 
         if (inputStrength > 1) {
             inputStrength = 1;
         }
 
-        // Check if the magnitude is greater than the deadzone
         if (inputStrength > 0.2) {
-            steering.leftBelt = -y + steer*x;
-            steering.rightBelt = -y - steer*x;
+            inputReceived = true;
+            leftBeltFloat = -y + steer*x;
+            rightBeltFloat = -y - steer*x;
         }
         else {
-            steering.leftBelt = 0;
-            steering.rightBelt = 0;
+            leftBeltFloat = 0;
+            rightBeltFloat = 0;
         }
     }
-    // Normalizing
-    if (abs(steering.leftBelt) > abs(steering.rightBelt)) {
-        steering.rightBelt = steering.rightBelt/abs(steering.leftBelt);
-        steering.leftBelt = steering.leftBelt/abs(steering.leftBelt);
-    }
-    else {
-        steering.leftBelt = steering.leftBelt/abs(steering.rightBelt);
-        steering.rightBelt = steering.rightBelt/abs(steering.rightBelt);
+
+    // Normalize
+    if (inputReceived) {
+        if (fabs(leftBeltFloat) > fabs(rightBeltFloat)) {
+            rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
+            leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
+        }
+        else {
+            leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
+            rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
+        }
     }
 
-    // Convert to RawMotorModesEnum value range
-    steering.leftBelt = round(steering.leftBelt*255*maxSpeed*inputStrength);
-    steering.rightBelt = round(steering.rightBelt*255*maxSpeed*inputStrength);
+    TankSteering steering;
+    steering.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
+    steering.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
 
     return steering;
 }
