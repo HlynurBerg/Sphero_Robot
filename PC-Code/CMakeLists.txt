@@ -33,6 +33,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
 
 target_link_libraries(Sphero_Robot PRIVATE
@@ -43,12 +44,13 @@ target_link_libraries(Sphero_Robot PRIVATE
 add_subdirectory(src)
 
 IF(NETWORKING_BUILD_TESTS)
+
         include(FetchContent)
 
         FetchContent_Declare(
                 Catch2
                 GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-                GIT_TAG v2.13.4
+                GIT_TAG v3.4.0
         )
         FetchContent_MakeAvailable(Catch2)
 

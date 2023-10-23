@@ -1,9 +1,8 @@
 //
 // Created by jorge on 10/16/2023.
 //
-
-#ifndef SPHERO_ROBOT_TCP_CLIENT_HPP
-#define SPHERO_ROBOT_TCP_CLIENT_HPP
+#ifndef TESTABLE_NETWORKING_TCP_CLIENT_HPP
+#define TESTABLE_NETWORKING_TCP_CLIENT_HPP
 
 #include <boost/asio.hpp>
 
@@ -58,4 +57,4 @@ private:
     tcp::socket socket_{io_service_};
 };
 
-#endif//SPHERO_ROBOT_TCP_CLIENT_HPP
+#endif//TESTABLE_NETWORKING_TCP_CLIENT_HPP
