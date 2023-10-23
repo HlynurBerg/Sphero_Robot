@@ -23,11 +23,8 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     //Tilt of the joystick
     float inputStrength = 1;
 
-    bool inputReceived = false;
-
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
-        inputReceived = true;
 
         // Adding up inputs
         if (isUpPressed) {
@@ -60,7 +57,6 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
         }
 
         if (inputStrength > 0.2) {
-            inputReceived = true;
             leftBeltFloat = -y + steer*x;
             rightBeltFloat = -y - steer*x;
         }
@@ -71,15 +67,13 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     }
 
     // Normalize
-    if (inputReceived) {
-        if (fabs(leftBeltFloat) > fabs(rightBeltFloat)) {
-            rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
-            leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
-        }
-        else {
-            leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
-            rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
-        }
+    if ((fabs(leftBeltFloat) > fabs(rightBeltFloat)) and (round(leftBeltFloat) != 0)) {
+        rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
+        leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
+    }
+    else if (round(rightBeltFloat) != 0) {
+        leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
+        rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
     }
 
     TankSteering steering;
@@ -102,7 +96,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_Joystick* joystick = NULL;
+    SDL_Joystick* joystick = nullptr;
     if(SDL_NumJoysticks() > 0) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
@@ -116,7 +110,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+        const Uint8* keyboardState = SDL_GetKeyboardState(nullptr);
         TankSteering result = getTankSteering(keyboardState, joystick);
         std::cout << "Left Belt: " << result.leftBelt << ", Right Belt: " << result.rightBelt << std::endl;
 
