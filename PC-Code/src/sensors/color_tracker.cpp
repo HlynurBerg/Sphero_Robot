@@ -9,7 +9,7 @@ using namespace std;
 using namespace cv;
 
 int main() {
-    VideoCapture cap(0); // Open default camera
+    VideoCapture cap(0);// TODO: Endre denne til å ta inn robot kamera
 
     cap.set(CAP_PROP_FRAME_WIDTH, 640);
     cap.set(CAP_PROP_FRAME_HEIGHT, 480);
@@ -45,7 +45,7 @@ int main() {
         for (const auto& contour : contours) {
             if (contourArea(contour) > min_contour_area) {
                 Moments M = moments(contour);
-                Point2f centroid;
+                Point2f centroid; //TODO centroid har x & y koordinater. Bruk for "follow me" mode
                 if (M.m00 != 0) {
                     centroid = Point2f(static_cast<float>(M.m10 / M.m00), static_cast<float>(M.m01 / M.m00));
                 } else {
