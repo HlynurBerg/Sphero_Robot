@@ -49,3 +49,19 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def setMotors(leftBelt, rightBelt):
+    if (leftBelt < 0):
+        LeftMode(2)
+        LeftSpeed(abs(leftBelt))
+    else:
+        LeftMode(1)
+        LeftSpeed(leftBelt)
+    if(rightBelt < 0):
+        RightMode(2)
+        RightSpeed(abs(rightBelt))
+    else:
+        RightMode(1)
+        RightSpeed(rightBelt)
+
+
