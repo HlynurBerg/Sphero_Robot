@@ -1,5 +1,6 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
-
+add_executable(main main.cpp)
+target_include_directories(tcp_client PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
 OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
 
 IF (MSVC)
@@ -26,6 +27,7 @@ add_executable(Sphero_Robot
         include/comms/client/clients.hpp
         tests/test_tcp_client.cpp
 )
+
 
 
 
