@@ -9,6 +9,24 @@ struct TankSteering {
     int rightBelt;
 };
 
+TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float maxSpeed, float inputStrength) {
+    if ((fabs(leftBeltFloat) > fabs(rightBeltFloat)) and (round(leftBeltFloat) != 0)) {
+        rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
+        leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
+    }
+    else if (round(rightBeltFloat) != 0) {
+        leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
+        rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
+    }
+
+    TankSteering normalized;
+    normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
+    normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
+
+    return normalized;
+}
+
+
 TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick) {
 
     float leftBeltFloat = 0.0, rightBeltFloat = 0.0;
@@ -68,22 +86,17 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
             rightBeltFloat = 0;
         }
     }
+    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength);
+}
 
-    // Normalize
-    if ((fabs(leftBeltFloat) > fabs(rightBeltFloat)) and (round(leftBeltFloat) != 0)) {
-        rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
-        leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
-    }
-    else if (round(rightBeltFloat) != 0) {
-        leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
-        rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
-    }
+TankSteering followMe(float difference, int forwards) {
+    float inputStrength = 1;
+    float maxSpeed = 0.3;
+    float steer = 0.5;
+    float leftBeltFloat = forwards + steer*difference;
+    float rightBeltFloat = forwards - steer*difference;
 
-    TankSteering steering;
-    steering.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
-    steering.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
-
-    return steering;
+    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength);
 }
 
 #endif//SPHERO_ROBOT_MOTORCONTROLLER_HPP
