@@ -15,10 +15,10 @@
 
 using boost::asio::ip::tcp;
 
-class tcp_client {
+class clients {
 
 public:
-    tcp_client(const std::string &host, int port) {
+    clients(const std::string &host, int port) {
 
         auto endpoints = resolver_.resolve(host, std::to_string(port));
         boost::asio::connect(socket_, endpoints);

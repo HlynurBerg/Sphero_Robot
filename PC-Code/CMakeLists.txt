@@ -10,7 +10,7 @@ set(HEADERS
         include/comms/communicationhandler.hpp
         include/controllers/motorcontroller.hpp
         include/sensors/sensorreader.hpp
-        include/comms/client/tcp_client.hpp
+        include/comms/client/clients.hpp
         )
 
 add_executable(Sphero_Robot
@@ -23,7 +23,7 @@ add_executable(Sphero_Robot
         tests/test_sensorreader.cpp
         include/comms/server/socket_handler.hpp
         include/comms/server/tcp_server.hpp
-        include/comms/client/tcp_client.hpp
+        include/comms/client/clients.hpp
         tests/test_tcp_client.cpp
 )
 

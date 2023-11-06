@@ -1,5 +1,5 @@
-// include the tcp_client.hpp file from the client folder in the comms library
-#include "comms/client/tcp_client.hpp"
+// include the clients.hpp file from the client folder in the comms library
+#include "comms/client/clients.hpp"
 
 
 int main(int argc, char **argv) {
@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     }
 
     try {
-        tcp_client client(host, port);
+        clients client(host, port);
 
         for (int i = 0; i < 10; i++) {
             client.send("Per_" + std::to_string(i));
