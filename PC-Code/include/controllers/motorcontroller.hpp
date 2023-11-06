@@ -9,7 +9,7 @@ struct TankSteering {
     int rightBelt;
 };
 
-TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float maxSpeed, float inputStrength) {
+TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float maxSpeed, float inputStrength, float turnSpeed) {
     if ((fabs(leftBeltFloat) > fabs(rightBeltFloat)) and (round(leftBeltFloat) != 0)) {
         rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
         leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
@@ -20,9 +20,14 @@ TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float max
     }
 
     TankSteering normalized;
-    normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
-    normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
-
+    if (leftBeltFloat = -rightBeltFloat) {
+        normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength * turnSpeed);
+        normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength * turnSpeed);
+    }
+    else {
+        normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
+        normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
+    }
     return normalized;
 }
 
@@ -43,6 +48,8 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     float maxSpeed = 0.3;
     //Tilt of the joystick
     float inputStrength = 1;
+    //Speed of rotation
+    float turnSpeed = 0.5;
 
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
@@ -86,17 +93,18 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
             rightBeltFloat = 0;
         }
     }
-    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength);
+    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
 }
 
 TankSteering followMe(float difference, int forwards) {
     float inputStrength = 1;
     float maxSpeed = 0.3;
     float steer = 0.5;
+    float turnSpeed = 0.3;
     float leftBeltFloat = forwards + steer*difference;
     float rightBeltFloat = forwards - steer*difference;
 
-    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength);
+    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
 }
 
 #endif//SPHERO_ROBOT_MOTORCONTROLLER_HPP
