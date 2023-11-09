@@ -27,7 +27,7 @@ add_executable(Sphero_Robot
         include/comms/server/socket_handler.hpp
         include/comms/server/tcp_server.hpp
         include/comms/client/clients.hpp
-        tests/test_tcp_client.cpp
+        tests/test_client.cpp
 )
 
 
@@ -48,6 +48,7 @@ target_link_libraries(main PRIVATE
 )
 
 add_subdirectory(src)
+
 
 IF(NETWORKING_BUILD_TESTS)
 
