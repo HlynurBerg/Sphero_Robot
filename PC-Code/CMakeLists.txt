@@ -3,7 +3,14 @@ set(Boost_NO_WARN_NEW_VERSIONS 1)
 add_executable(main main.cpp
         src/control/userinput.cpp
         src/communications/tcp_client.cpp
-        src/communications/html5.cpp)
+        src/communications/html5.cpp
+        include/communications/client.hpp
+        include/communications/server.hpp
+        include/control/motorcontroller.hpp
+        include/sensors/colortracker.hpp
+        include/sensors/sensordata.hpp)
+
+
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
 
 
@@ -14,6 +21,11 @@ IF (MSVC)
 ENDIF()
 
 set(HEADERS
+        include/communications/client.hpp
+        include/communications/server.hpp
+        include/control/motorcontroller.hpp
+        include/sensors/colortracker.hpp
+        include/sensors/sensordata.hpp
         )
 
 add_executable(Sphero_Robot
