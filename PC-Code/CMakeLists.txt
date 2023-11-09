@@ -40,9 +40,12 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
 
-target_link_libraries(Sphero_Robot PRIVATE
+target_link_libraries(main PRIVATE
         SDL2::SDL2 SDL2::SDL2main
-
+        ${Boost_LIBRARIES}
+        opencv_core
+        opencv_imgproc
+        sdl2
 )
 
 add_subdirectory(src)
