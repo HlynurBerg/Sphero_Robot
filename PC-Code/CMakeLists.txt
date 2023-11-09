@@ -1,18 +1,5 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 
-add_executable(main main.cpp
-        src/control/userinput.cpp
-        src/communications/tcp_client.cpp
-        src/communications/html5.cpp
-        include/communications/client.hpp
-        include/communications/server.hpp
-        include/control/motorcontroller.hpp
-        include/sensors/colortracker.hpp
-        include/sensors/sensordata.hpp)
-
-
-target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
-
 
 OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
 
@@ -26,11 +13,23 @@ set(HEADERS
         include/control/motorcontroller.hpp
         include/sensors/colortracker.hpp
         include/sensors/sensordata.hpp
+        include/communications/client.hpp
+        include/communications/server.hpp
+        include/control/motorcontroller.hpp
+        include/sensors/colortracker.hpp
+        include/sensors/sensordata.hpp
         )
 
-add_executable(Sphero_Robot
-        main.cpp
+add_executable(main main.cpp
+        src/control/userinput.cpp
+        src/control/motorcontroller.cpp
+        src/communications/tcp_client.cpp
+        src/communications/html5.cpp
+        src/sensors/sensorreader.cpp
 )
+
+target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
+
 
 
 find_package(Boost REQUIRED COMPONENTS system)
