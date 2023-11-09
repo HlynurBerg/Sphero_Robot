@@ -31,8 +31,6 @@ add_executable(Sphero_Robot
 )
 
 
-
-
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
@@ -40,9 +38,13 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
 
-target_link_libraries(Sphero_Robot PRIVATE
+target_link_libraries(main PRIVATE
         SDL2::SDL2 SDL2::SDL2main
-
+        ${Boost_LIBRARIES}
+        opencv_core
+        opencv_imgproc
+        opencv_imgcodecs
+        opencv_highgui
 )
 
 add_subdirectory(src)
