@@ -1,7 +1,6 @@
 //
 // Created by rober on 06.11.2023.
 //
-
 #include <iostream>
 #include <SDL.h>
 #include <boost/asio.hpp>
@@ -13,9 +12,30 @@
 #include <cmath>
 
 using boost::asio::ip::udp;
-using namespace cv;
 
-// Base64 decoding function
+// Base64 decoding function - maybe replace with a library later
+std::string base64_decode(const std::string &in);
+
+class TankSteering {
+public:
+    int leftBelt;
+    int rightBelt;
+
+    static TankSteering calculate(const Uint8* keyboardState, SDL_Joystick* joystick);
+};
+
+class NetworkHandler {
+public:
+    void handle_network(SDL_Joystick* joystick);
+};
+
+class VideoHandler {
+public:
+    void handle_video();
+};
+
+// Definitions
+
 std::string base64_decode(const std::string &in) {
     std::string out;
     std::vector<int> T(256, -1);
@@ -33,11 +53,6 @@ std::string base64_decode(const std::string &in) {
     }
     return out;
 }
-
-struct TankSteering {
-    int leftBelt;
-    int rightBelt;
-};
 
 TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick) {
 
@@ -116,7 +131,7 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     return steering;
 }
 
-void handle_network() {
+void NetworkHandler::handle_network(SDL_Joystick* joystick) {
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("10.25.46.49"), 6000);
     boost::asio::ip::tcp::socket socket(io_service);
@@ -129,15 +144,22 @@ void handle_network() {
     }
 
     while (true) {
-        // Get tank steering values
-        const Uint8* keyboardState = SDL_GetKeyboardState(nullptr);
-        TankSteering result = getTankSteering(keyboardState, nullptr);  // Assume joystick is nullptr for this example
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) { // Process SDL events
+            if (e.type == SDL_QUIT) {
+                // Handle quit event if necessary
+                return;
+            }
+            // You can add more event handling as needed here
+        }
 
-        // Send these values to Python code
-        std::string command = std::to_string(result.leftBelt) + ", " + std::to_string(result.rightBelt) + "\n"; // had to add lineshift for the python code to work
+        const Uint8* keyboardState = SDL_GetKeyboardState(nullptr);
+        TankSteering result = getTankSteering(keyboardState, joystick);
+
+        std::string command = std::to_string(result.leftBelt) + ", " + std::to_string(result.rightBelt) + "\n";
         boost::system::error_code error;
         socket.write_some(boost::asio::buffer(command), error);
-        // std::cout << "Left Belt: " << result.leftBelt << ", Right Belt: " << result.rightBelt << std::endl;
+
         std::cout << "Sending Command: " << command << std::endl;
 
         if (error) {
@@ -149,7 +171,7 @@ void handle_network() {
     }
 }
 
-void handle_video() {
+void VideoHandler::handle_video() {
     try {
         boost::asio::io_service io_service;
         udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
@@ -164,7 +186,7 @@ void handle_video() {
             std::string encoded_data(recv_buf.begin(), recv_buf.begin() + len);
             std::string decoded_data = base64_decode(encoded_data);
             std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
-            Mat frame = imdecode(buf, IMREAD_COLOR);
+            cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
 
             if (frame.empty()) {
                 std::cerr << "Could not decode frame!" << std::endl;
@@ -173,7 +195,7 @@ void handle_video() {
 
             imshow("Received Video", frame);
 
-            if (waitKey(30) >= 0) {
+            if (cv::waitKey(30) >= 0) {
                 break;
             }
         }
@@ -183,11 +205,8 @@ void handle_video() {
     }
 }
 
-int main(int argc, char* argv[]) {
-    // Start the networking and video threads
-    std::thread network_thread(handle_network);
-    std::thread video_thread(handle_video);
 
+int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return 1;
@@ -205,6 +224,19 @@ int main(int argc, char* argv[]) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
 
+    NetworkHandler networkHandler;
+    VideoHandler videoHandler;
+
+    // Networking thread now receives joystick pointer
+    std::thread network_thread([&]() {
+        networkHandler.handle_network(joystick);
+    });
+
+    std::thread video_thread([&]() {
+        videoHandler.handle_video();
+    });
+
+    // Main loop now only handles window events
     bool runLoop = true;
     while (runLoop) {
         SDL_Event e;
@@ -213,13 +245,10 @@ int main(int argc, char* argv[]) {
                 runLoop = false;
             }
         }
-
-        const Uint8* keyboardState = SDL_GetKeyboardState(nullptr);
-        TankSteering result = getTankSteering(keyboardState, joystick);
-
         SDL_Delay(10);
     }
 
+    // Cleanup
     if(joystick) {
         SDL_JoystickClose(joystick);
     }
@@ -227,7 +256,7 @@ int main(int argc, char* argv[]) {
     SDL_DestroyWindow(win);
     SDL_Quit();
 
-    // Join the networking and video threads before exiting
+    // Ensure threads are joined before exiting
     network_thread.join();
     video_thread.join();
 

@@ -20,7 +20,7 @@ TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float max
     }
 
     TankSteering normalized;
-    if (leftBeltFloat = -rightBeltFloat) {
+    if (leftBeltFloat == -rightBeltFloat) {
         normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength * turnSpeed);
         normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength * turnSpeed);
     }
