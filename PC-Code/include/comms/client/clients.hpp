@@ -60,6 +60,29 @@ std::string base64_decode(const std::string &in) {
     return out;
 }
 
+TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float maxSpeed, float inputStrength, float turnSpeed) {
+    if ((fabs(leftBeltFloat) > fabs(rightBeltFloat)) and (round(leftBeltFloat) != 0)) {
+        rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
+        leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
+    }
+    else if (round(rightBeltFloat) != 0) {
+        leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
+        rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
+    }
+
+    TankSteering normalized;
+    if (leftBeltFloat == -rightBeltFloat) {
+        normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength * turnSpeed);
+        normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength * turnSpeed);
+    }
+    else {
+        normalized.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
+        normalized.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
+    }
+    return normalized;
+}
+
+
 TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick) {
 
     float leftBeltFloat = 0.0, rightBeltFloat = 0.0;
@@ -73,9 +96,11 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     //Tune this variable to tune steering strength while driving
     float steer = 0.5;
     //Max speed of the robot
-    float maxSpeed = 0.4;
+    float maxSpeed = 0.3;
     //Tilt of the joystick
     float inputStrength = 1;
+    //Speed of rotation
+    float turnSpeed = 0.5;
 
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
@@ -119,23 +144,23 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
             rightBeltFloat = 0;
         }
     }
-
-    // Normalize
-    if ((fabs(leftBeltFloat) > fabs(rightBeltFloat)) and (round(leftBeltFloat) != 0)) {
-        rightBeltFloat = rightBeltFloat/fabs(leftBeltFloat);
-        leftBeltFloat = leftBeltFloat/fabs(leftBeltFloat);
-    }
-    else if (round(rightBeltFloat) != 0) {
-        leftBeltFloat = leftBeltFloat/fabs(rightBeltFloat);
-        rightBeltFloat = rightBeltFloat/fabs(rightBeltFloat);
-    }
-
-    TankSteering steering;
-    steering.leftBelt = round(leftBeltFloat * 255 * maxSpeed * inputStrength);
-    steering.rightBelt = round(rightBeltFloat * 255 * maxSpeed * inputStrength);
-
-    return steering;
+    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
 }
+
+TankSteering followMe(float difference, float forwards) {
+    float inputStrength = 1;
+    float maxSpeed = 0.3;
+    float steer = 0.5;
+    float turnSpeed = 1;
+    if(forwards < 0.1){
+        turnSpeed = 2*abs(difference);
+    }
+    float leftBeltFloat = forwards + steer*difference;
+    float rightBeltFloat = forwards - steer*difference;
+
+    return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
+}
+
 
 void NetworkHandler::handle_network(SDL_Joystick* joystick) {
     boost::asio::io_service io_service;
