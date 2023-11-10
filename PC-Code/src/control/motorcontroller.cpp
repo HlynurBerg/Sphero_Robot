@@ -76,11 +76,11 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
             inputStrength = 1;
         }
 
+        //Deadzone
         if (inputStrength > 0.2) {
             leftBeltFloat = -y + steer*x;
             rightBeltFloat = -y - steer*x;
         }
-        //Deadzone
         else {
             leftBeltFloat = 0;
             rightBeltFloat = 0;

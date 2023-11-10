@@ -4,7 +4,7 @@
 #include <SDL.h> //for User Input. Change when switching to html5 api
 #include <cmath> //for absolute value function in normalizeBelts
 
-class TankSteering {
+class TankSteering { //consider changing to a struct. everything is public
 public:
     int leftBelt;
     int rightBelt;
