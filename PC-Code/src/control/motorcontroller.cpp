@@ -1,5 +1,4 @@
 #include <control/motorcontroller.hpp>
-#include "control/motorcontroller.hpp"
 
 TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float maxSpeed, float inputStrength, float turnSpeed) {
     //Make both belts have a value of between -1 and 1
