@@ -5,6 +5,7 @@ import cv2
 import imutils
 import base64
 import time
+import qwiic
 from sphero_sdk import SpheroRvrAsync, SerialAsyncDal, RvrStreamingServices
 
 # Constants
@@ -16,7 +17,7 @@ DATA_BROADCAST_PORT = 6003
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 JPEG_QUALITY = 30
-BATTERY_UPDATE_INTERVAL = 10  # seconds
+BATTERY_UPDATE_INTERVAL = 30  # seconds
 
 # Global variables
 left_velocity = 0
@@ -152,7 +153,7 @@ def data_broadcast_thread():
                             'timestamp': time.time(),
                             'Accelerometer': accelerometer_data,
                             'Encoder': encoder_data,
-                            'Battery': battery_percentage
+                            'Battery': battery_percentage,
                             'Distance': distance_mm
                         }
                         data_str = str(combined_data) + '\n'
@@ -175,7 +176,7 @@ async def update_battery_percentage():
     global battery_percentage
     while running:
         battery_percentage = await rvr.get_battery_percentage()
-        print(f"Battery percentage: {battery_percentage}")  # Debugging print
+        # print(f"Battery percentage: {battery_percentage}")  # Debugging print
         await asyncio.sleep(BATTERY_UPDATE_INTERVAL)
 
 
@@ -193,7 +194,7 @@ def measure_distance():
             distance_mm = ToF.get_distance()  # Store distance in mm
             time.sleep(0.005)
             ToF.stop_ranging()
-            print(f"Distance(mm): {distance_mm}")  # Debugging print
+            # print(f"Distance(mm): {distance_mm}")  # Debugging print
         except Exception as e:
             print(e)
         time.sleep(0.1)  # Adjust the frequency of measurements as needed
