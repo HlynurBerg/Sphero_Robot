@@ -1,3 +1,4 @@
+import sys
 import asyncio
 import socket
 import threading
@@ -6,7 +7,10 @@ import imutils
 import base64
 import time
 import qwiic
+
+sys.path.append('/home/pi/sphero-sdk-raspberrypi-python')
 from sphero_sdk import SpheroRvrAsync, SerialAsyncDal, RvrStreamingServices
+
 
 # Constants
 HOST_IP = '10.25.46.49'  # The IP address of the RPi
@@ -185,13 +189,13 @@ def measure_distance():
     global distance_mm
     ToF = qwiic.QwiicVL53L1X()
     if ToF.sensor_init() is None:
-        print("Sensor online!\n")
+        print("Distance sensor online!\n")
 
     while running:
         try:
             ToF.start_ranging()
             time.sleep(0.005)
-            distance_mm = ToF.get_distance()  # Store distance in mm
+            distance_mm = ToF.get_distance()
             time.sleep(0.005)
             ToF.stop_ranging()
             # print(f"Distance(mm): {distance_mm}")  # Debugging print
