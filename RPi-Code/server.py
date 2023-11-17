@@ -27,10 +27,10 @@ BATTERY_UPDATE_INTERVAL = 30  # seconds
 left_velocity = 0
 right_velocity = 0
 running = True  # Flag to control the main loop
-accelerometer_data = {}  # Global variable for the accelerometer data
-encoder_data = {}  # Global variable for encoder data
-battery_percentage = 0  # Global variable for battery percentage
-distance_mm = 0  # Global variable for distance in millimeters
+speed_data = {}  # Global variable for the velocity data from the RVR
+encoder_data = {}  # Global variable for encoder data from the RVR
+battery_percentage = 0  # Global variable for battery percentage from the RVR
+distance_mm = 0  # Global variable for distance in millimeters from the sparkfun TOF
 
 # AsyncIO loop and SpheroRvrAsync instance
 loop = asyncio.get_event_loop()
@@ -150,12 +150,12 @@ def data_broadcast_thread():
             print("Data broadcast client connected")
 
             while running:
-                if accelerometer_data or encoder_data or battery_percentage or distance_mm:
+                if speed_data or encoder_data or battery_percentage or distance_mm:
                     try:
                         # Combine data from the different sensors
                         combined_data = {
                             'timestamp': time.time(),
-                            'Accelerometer': accelerometer_data,
+                            'Speed': speed_data,
                             'Encoder': encoder_data,
                             'Battery': battery_percentage,
                             'Distance': distance_mm
@@ -168,11 +168,11 @@ def data_broadcast_thread():
                         break
 
 
-async def accelerometer_handler(data):
-    """Async handler for updating accelerometer data."""
-    global accelerometer_data
-    accelerometer_data = data
-    # print("New accelerometer data received:", accelerometer_data) # Debugging print
+async def speed_handler(data):
+    """Async handler for updating speed data."""
+    global speed_data
+    speed_data = data
+    # print("New speed data received:", speed_data) # Debugging print
 
 
 async def update_battery_percentage():
@@ -212,10 +212,10 @@ async def main():
     await asyncio.sleep(2)
     await rvr.reset_yaw()
 
-    # Set up accelerometer streaming
+    # Set up speed streaming
     await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=accelerometer_handler
+        service=RvrStreamingServices.velocity,
+        handler=speed_handler
     )
     await rvr.sensor_control.start(interval=250)
 
