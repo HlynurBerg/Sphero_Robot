@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include "communications/client.hpp"
+#include "sensors/sensordata.hpp"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -43,9 +44,21 @@ int main(int argc, char *argv[]) {
         videoHandler.handle_video(enableColorTracking);
     });
 
+    DataReceiver dataReceiver("192.168.2.229", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
+
     // Main loop now only handles window events
     bool runLoop = true;
     while (runLoop) {
+        dataReceiver.updateData(); // Update data from server //TODO: This is just for testing, correct it later
+
+        double battery_percentage = dataReceiver.getBatteryPercentage(); //TODO: This is just for testing, correct it later
+        double distance_mm = dataReceiver.getDistanceMm(); //TODO: This is just for testing, correct it later
+        double speed_y = dataReceiver.getSpeedY(); //TODO: This is just for testing, correct it later
+
+        std::cout << "Battery: " << battery_percentage
+                  << "%, Distance: " << distance_mm
+                  << "mm, Speed Y: " << speed_y << " m/s" << std::endl;
+
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
