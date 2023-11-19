@@ -26,6 +26,7 @@ add_executable(main main.cpp
         src/communications/tcp_client.cpp
         src/communications/html5.cpp
         src/sensors/sensorreader.cpp
+        include/communications/network_socket.hpp
 )
 
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
