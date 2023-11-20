@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
         videoHandler.handle_video(enableColorTracking);
     });
 
-    DataReceiver dataReceiver("192.168.2.229", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
+    DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
 
     // Main loop now only handles window events
     bool runLoop = true;

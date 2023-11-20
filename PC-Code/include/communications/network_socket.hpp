@@ -10,9 +10,34 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <array>
+#include <cstdint>
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
+
+//#TODO: add a network_helper class to handle the conversion between bytes and int
+class network_helper {
+public:
+    // Converts a 32-bit integer to a 4-byte array
+    static std::array<unsigned char, 4> int_to_bytes(int32_t value) {
+        std::array<unsigned char, 4> bytes{};
+        for (int i = 0; i < 4; ++i) {
+            bytes[3 - i] = (value >> (i * 8)) & 0xFF;
+        }
+        return bytes;
+    }
+
+    // Converts a 4-byte array to a 32-bit integer
+    static int32_t bytes_to_int(const std::array<unsigned char, 4>& bytes) {
+        int32_t value = 0;
+        for (int i = 0; i < 4; ++i) {
+            value |= (static_cast<int32_t>(bytes[3 - i]) << (i * 8));
+        }
+        return value;
+    }
+};
+
 // class to handle the socket
 struct message_handler {
     // pure virtual function to handle the message
@@ -46,7 +71,7 @@ private:
     int revSize() {
         std::array<unsigned char, 4> buf{};
         boost::asio::read(*socket_, boost::asio::buffer(buf), boost::asio::transfer_exactly(4));
-        return bytes_to_int(buf);
+        return network_helper::bytes_to_int(buf);
     }
     // receives the message size and then the message
     std::string recvMsg() {
@@ -63,7 +88,7 @@ private:
 // sends firstly its size and then the message
 void sendMsg(const std::string &msg) {
         int msgSize = static_cast<int>(msg.size());
-        socket_->send(boost::asio::buffer(int_to_bytes(msgSize), 4));
+        socket_->send(boost::asio::buffer(network_helper::int_to_bytes(msgSize), 4));
         socket_->send(boost::asio::buffer(msg));
     }
 // starts the message handling in a new thread
@@ -83,5 +108,5 @@ void run_handler() {
     // declare server as a friend class to allow access to private members
     friend class server;
 };
-//#TODO: add a network_helper class to handle the conversion between bytes and int
+
 #endif//SPHERO_ROBOT_SOCKET_HANDLER_HPP
