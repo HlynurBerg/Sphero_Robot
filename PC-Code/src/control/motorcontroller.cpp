@@ -24,8 +24,16 @@ TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float max
     return normalized;
 }
 
+float autoStop(int value, int lowerBound, int upperBound) {
+    if (value < lowerBound) return 0.0f;
+    if (value > upperBound) return 1.0f;
+    // Linear interpolation between 200 and 1000
+    float stop = (value - lowerBound) / (upperBound - lowerBound);
+    return stop;
+}
 
-TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick) {
+
+TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick, int distance) {
 
     float leftBeltFloat = 0.0, rightBeltFloat = 0.0;
 
@@ -48,9 +56,9 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
 
         // Adding up inputs
-        if (isUpPressed) {
-            leftBeltFloat++;
-            rightBeltFloat++;
+        if (isUpPressed) { // autoStop slows down the robot when close to objects
+            leftBeltFloat = (leftBeltFloat+1)*autoStop(distance);
+            rightBeltFloat = (rightBeltFloat+1)*autoStop(distance);
         }
         if (isDownPressed) {
             leftBeltFloat--;
@@ -78,8 +86,12 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
 
         //Deadzone
         if (inputStrength > 0.2) {
-            leftBeltFloat = -y + steer*x;
-            rightBeltFloat = -y - steer*x;
+            float stop = 1;
+            if (y > 0) {
+                stop = autoStop(distance, 100, 500);
+            }
+            leftBeltFloat = -y*stop + steer*x;
+            rightBeltFloat = -y*stop - steer*x;
         }
         else {
             leftBeltFloat = 0;
@@ -89,14 +101,15 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick)
     return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
 }
 
-TankSteering followMe(float difference, float forwards) {
+TankSteering followMe(float difference, int distance) { //TODO: add a check to see if something is detected. currently robot will just drive
     //parameters for how the robot should drive while autonomous
+    float stop = autoStop(distance, 200, 1000);
     float inputStrength = 1;
     float maxSpeed = 0.3;
     float steer = 0.5;
     float turnSpeed = 0.3;
-    float leftBeltFloat = forwards + steer*difference;
-    float rightBeltFloat = forwards - steer*difference;
+    float leftBeltFloat = 255*stop + steer*difference;
+    float rightBeltFloat = 255*stop - steer*difference;
 
     TankSteering result = normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
     return result;
