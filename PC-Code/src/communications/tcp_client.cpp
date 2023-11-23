@@ -1,10 +1,13 @@
 #include <communications/client.hpp>
 #include <control/motorcontroller.hpp>
 
-void NetworkHandler::handle_controlling(SDL_Joystick *joystick) {
+
+void handle_controlling(TankSteering& steer, std::mutex& steer_mutex) {
+    // Your TCP client logic here
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("10.25.46.49"), 6000);
     boost::asio::ip::tcp::socket socket(io_service);
+    // Now you can use 'steer' within this context
 
     try {
         socket.connect(endpoint);
@@ -13,19 +16,23 @@ void NetworkHandler::handle_controlling(SDL_Joystick *joystick) {
         return;
     }
 
-    while (true) {
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) { // Process SDL events
-            if (e.type == SDL_QUIT) {
-                // Handle quit event if necessary
-                return;
-            }
+    while (true) { // Loop to continuously send data
+        TankSteering localCopy;
+
+        { // Scoped lock
+            std::lock_guard<std::mutex> lock(steer_mutex);
+            localCopy = steer; // Copying the shared data under the lock
         }
 
-        const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
-        TankSteering result = getTankSteering(keyboardState, joystick);
+        std::string command = std::to_string(localCopy.leftBelt) + ", " + std::to_string(localCopy.rightBelt) + "\n";
+        // ... send command ...
 
-        std::string command = std::to_string(result.leftBelt) + ", " + std::to_string(result.rightBelt) + "\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Control the update rate
+    }
+
+        //se på referanse
+        //TankSteering result = referanse
+        std::string command = std::to_string(steer.leftBelt) + ", " + std::to_string(steer.rightBelt) + "\n";
         boost::system::error_code error;
         socket.write_some(boost::asio::buffer(command), error);
 
@@ -33,12 +40,11 @@ void NetworkHandler::handle_controlling(SDL_Joystick *joystick) {
 
         if (error) {
             std::cerr << "Error while sending data: " << error.message() << std::endl;
-            break;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-}
+
 
 UDPHandler::UDPHandler()
     : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string("10.25.46.49"), 6001) {

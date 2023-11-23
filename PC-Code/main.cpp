@@ -3,6 +3,7 @@
 #include <thread>
 #include "communications/client.hpp"
 #include "sensors/sensordata.hpp"
+#include "control/motorcontroller.hpp"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -22,6 +23,20 @@ int main(int argc, char *argv[]) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
 
+    // send reference to tanksteer struct to tcp_client
+
+    TankSteering steer;
+    std::mutex steer_mutex;
+    // Make a thread for tanksteering and pass a reference to the tcp_client continuously
+    std::thread steering_thread([&]() {
+        handle_controlling(std::ref(steer), std::ref(steer_mutex));
+    });
+
+
+    if (steering_thread.joinable()) {
+        steering_thread.join();
+    }
+    
     bool enableColorTracking = false;
     std::cout << "Enter 1 for Sphero control, 2 for color tracking: ";
     int mode;
@@ -34,8 +49,7 @@ int main(int argc, char *argv[]) {
     std::thread network_thread;
     if (!enableColorTracking) {
         network_thread = std::thread([&]() {
-            NetworkHandler networkHandler;
-            networkHandler.handle_controlling(joystick);
+        handle_controlling(steer, steer_mutex);
         });
     }
 
@@ -45,12 +59,17 @@ int main(int argc, char *argv[]) {
     });
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
-
     // Main loop now only handles window events
     bool runLoop = true;
     while (runLoop) {
-        dataReceiver.updateData(); // Update data from server //TODO: This is just for testing, correct it later
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                runLoop = false;
+            }
+        }
 
+        dataReceiver.updateData(); // Update data from server //TODO: This is just for testing, correct it later
         double battery_percentage = dataReceiver.getBatteryPercentage(); //TODO: This is just for testing, correct it later
         double distance_mm = dataReceiver.getDistanceMm(); //TODO: This is just for testing, correct it later
         double speed_y = dataReceiver.getSpeedY(); //TODO: This is just for testing, correct it later
@@ -59,14 +78,23 @@ int main(int argc, char *argv[]) {
                   << "%, Distance: " << distance_mm
                   << "mm, Speed Y: " << speed_y << " m/s" << std::endl;
 
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
-                runLoop = false;
+        //Steering the RVR
+        /*if (enableColorTracking) {
+            float diff = colorTracker(currentFrame);
+            TankSteering steer = followMe(diff, 0);
+        }*/
+
+        //else {
+            const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
+            {
+                std::lock_guard<std::mutex> lock(steer_mutex);
+                steer = getTankSteering(keyboardState, joystick, distance_mm);
             }
-        }
+
+        //}
         SDL_Delay(10);
     }
+
 
     // Cleanup
     if (joystick) {

@@ -57,8 +57,8 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick,
 
         // Adding up inputs
         if (isUpPressed) { // autoStop slows down the robot when close to objects
-            leftBeltFloat = (leftBeltFloat+1)*autoStop(distance);
-            rightBeltFloat = (rightBeltFloat+1)*autoStop(distance);
+            leftBeltFloat = (leftBeltFloat+1)*autoStop(distance, 100, 500);
+            rightBeltFloat = (rightBeltFloat+1)*autoStop(distance,100, 500);
         }
         if (isDownPressed) {
             leftBeltFloat--;

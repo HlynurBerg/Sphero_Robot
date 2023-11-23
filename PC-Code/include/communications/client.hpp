@@ -10,13 +10,14 @@
 #include <thread>
 #include <vector>
 #include <cmath>
+#include <control/motorcontroller.hpp>
+#include <mutex>
+// get a reference to the TankSteering struct and pass it to the function
 
 
-class NetworkHandler {
-public:
-    void handle_controlling(SDL_Joystick *joystick);
-};
+void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
 
+//
 class UDPHandler {
 public:
     UDPHandler();
