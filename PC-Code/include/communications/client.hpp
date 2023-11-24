@@ -32,6 +32,6 @@ private:
     boost::asio::ip::udp::endpoint remote_endpoint_;
 };
 
-void handle_video();
+void handle_video(cv::Mat frame, std::mutex& frame_mutex);
 
 #endif//SPHERO_ROBOT_CLIENT_HPP

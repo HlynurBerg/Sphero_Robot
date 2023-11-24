@@ -88,21 +88,23 @@ std::string UDPHandler::base64_decode(const std::string &in) {
     return out;
 }
 
-// TODO: Change this!!! write current frame to reference. Look main
-void handle_video() {
+void handle_video(cv::Mat& frame, std::mutex& frame_mutex)
     try {
-        std::cout << "Starting video thread" << std::endl;
+        std::cout << "Starting video loop" << std::endl;
         UDPHandler udpHandler; // Using the new UDPHandler class
 
         while (true) {
-            std::cout << "Starting video loop" << std::endl;
-            cv::Mat frame = udpHandler.receiveFrame(); // Receiving frame using UDPHandler
+            cv::Mat local_frame = udpHandler.receiveFrame(); // Receiving local_frame using UDPHandler
 
-            if (!frame.empty()) {
-                std::cout << "Received frame of size: " << frame.size() << std::endl;
-                cv::imshow("Received Video", frame);
+            if (!local_frame.empty()) {
+                std::cout << "Received local_frame of size: " << local_frame.size() << std::endl;
+                cv::imshow("Received Video", local_frame);
             } else {
-                std::cerr << "Received empty frame" << std::endl;
+                std::cerr << "Received empty local_frame" << std::endl;
+                { // Scoped lock
+                    std::lock_guard<std::mutex> lock(frame_mutex);
+                    frame = local_frame; // Copying the shared data under the lock
+                }
             }
 
             if (cv::waitKey(10) == 'q') {
@@ -113,7 +115,7 @@ void handle_video() {
     catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
-}
+
 
 // New functions from Robert
 //

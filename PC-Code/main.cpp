@@ -5,6 +5,7 @@
 #include "communications/client.hpp"
 #include "sensors/sensordata.hpp"
 #include "control/motorcontroller.hpp"
+#include "sensors/colortracker.hpp"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -28,15 +29,19 @@ int main(int argc, char *argv[]) {
 
     TankSteering steer;
     std::mutex steer_mutex;
+
     // Make a thread for tanksteering and pass a reference to the tcp_client continuously
+
     std::thread steering_thread([&]() {
-
         handle_controlling(std::ref(steer), std::ref(steer_mutex));
-
-
     });
 
+    cv::Mat frame;
+    std::mutex frame_mutex;
 
+    std::thread video_thread([&]() {
+        handle_video(std::ref(frame), std::ref(frame_mutex));
+    });
 
     bool enableColorTracking = false;
     std::cout << "Enter 1 for Sphero control, 2 for color tracking: ";
@@ -45,18 +50,6 @@ int main(int argc, char *argv[]) {
     if (mode == 2) {
         enableColorTracking = true;
     }
-
-    // Networking and video threads now need to consider the user's choice
-    std::thread network_thread;
-    if (!enableColorTracking) {
-        network_thread = std::thread([&]() {
-
-        });
-    }
-
-    std::thread video_thread([&]() {
-        handle_video();
-    });
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
     // Main loop now only handles window events
@@ -79,19 +72,22 @@ int main(int argc, char *argv[]) {
                   << "mm, Speed Y: " << speed_y << " m/s" << std::endl;
 
         //Steering the RVR
-        /*if (enableColorTracking) {
-            float diff = colorTracker(currentFrame);
-            TankSteering steer = followMe(diff, 0);
-        }*/
+        if (enableColorTracking) {
+            float diff = colorTracker(frame);
+            {
+                std::lock_guard<std::mutex> lock(frame_mutex);
+                steer = followMe(diff, distance_mm);
+            }
+        }
 
-        //else {
+        else {
             const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = getTankSteering(keyboardState, joystick, distance_mm);
             }
 
-        //}
+        }
         SDL_Delay(10);
 
     }
@@ -105,11 +101,11 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(win);
     SDL_Quit();
 
-    // Ensure threads are joined before exiting
-    if (network_thread.joinable()) {
-        network_thread.join();
+    //Joining threads before closing program
+
+    if (video_thread.joinable()) {
+        video_thread.join();
     }
-    video_thread.join();
     if (steering_thread.joinable()) {
         steering_thread.join();
     }
