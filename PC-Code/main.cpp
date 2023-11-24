@@ -30,13 +30,13 @@ int main(int argc, char *argv[]) {
     std::mutex steer_mutex;
     // Make a thread for tanksteering and pass a reference to the tcp_client continuously
     std::thread steering_thread([&]() {
+
         handle_controlling(std::ref(steer), std::ref(steer_mutex));
+
+
     });
 
 
-    if (steering_thread.joinable()) {
-        steering_thread.join();
-    }
 
     bool enableColorTracking = false;
     std::cout << "Enter 1 for Sphero control, 2 for color tracking: ";
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     std::thread network_thread;
     if (!enableColorTracking) {
         network_thread = std::thread([&]() {
-        handle_controlling(steer, steer_mutex);
+
         });
     }
 
@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
 
         //}
         SDL_Delay(10);
+
     }
 
 
@@ -109,6 +110,8 @@ int main(int argc, char *argv[]) {
         network_thread.join();
     }
     video_thread.join();
-
+    if (steering_thread.joinable()) {
+        steering_thread.join();
+    }
     return 0;
 }

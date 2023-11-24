@@ -16,17 +16,22 @@ void handle_controlling(TankSteering& steer, std::mutex& steer_mutex) {
         return;
     }
 
+    TankSteering localCopy;
     while (true) { // Loop to continuously send data
-        TankSteering localCopy;
 
         { // Scoped lock
             std::lock_guard<std::mutex> lock(steer_mutex);
             localCopy = steer; // Copying the shared data under the lock
         }
-
         std::string command = std::to_string(localCopy.leftBelt) + ", " + std::to_string(localCopy.rightBelt) + "\n";
-        // ... send command ...
+        // send localCopy to server
+        boost::system::error_code error;
+        socket.write_some(boost::asio::buffer(command), error);
 
+
+        if (error) {
+            std::cerr << "Error while sending data: " << error.message() << std::endl;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Control the update rate
     }
 
