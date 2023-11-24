@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <iostream>
 #include <thread>
+#include <string>
 #include "communications/client.hpp"
 #include "sensors/sensordata.hpp"
 #include "control/motorcontroller.hpp"
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
     if (steering_thread.joinable()) {
         steering_thread.join();
     }
-    
+
     bool enableColorTracking = false;
     std::cout << "Enter 1 for Sphero control, 2 for color tracking: ";
     int mode;
@@ -54,8 +55,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::thread video_thread([&]() {
-        VideoHandler videoHandler;
-        videoHandler.handle_video(enableColorTracking);
+        handle_video();
     });
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later

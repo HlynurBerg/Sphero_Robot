@@ -83,104 +83,65 @@ std::string UDPHandler::base64_decode(const std::string &in) {
     return out;
 }
 
-void VideoHandler::handle_video(bool enableColorTracking) {
-    if (enableColorTracking) {
-        colorTracking();
-    } else {
-        try {
-            std::cout << "Starting video thread" << std::endl;
-            UDPHandler udpHandler; // Using the new UDPHandler class
-
-            while (true) {
-                std::cout << "Starting video loop" << std::endl;
-                cv::Mat frame = udpHandler.receiveFrame(); // Receiving frame using UDPHandler
-
-                if (!frame.empty()) {
-                    std::cout << "Received frame of size: " << frame.size() << std::endl;
-                    cv::imshow("Received Video", frame);
-                } else {
-                    std::cerr << "Received empty frame" << std::endl;
-                }
-
-                if (cv::waitKey(10) == 'q') {
-                    break;
-                }
-            }
-        }
-        catch (const std::exception &e) {
-            std::cerr << e.what() << std::endl;
-        }
-    }
-}
-
-void VideoHandler::colorTracking() {
+// TODO: Change this!!! write current frame to reference. Look main
+void handle_video() {
     try {
-        UDPHandler udpHandler;
-
-        cv::Scalar lower_bound(13, 175, 50);
-        cv::Scalar upper_bound(23, 255, 255);
-        cv::Mat hsv, mask, segmented;
-        std::vector<std::vector<cv::Point>> contours;
-        int min_contour_area = 500;
+        std::cout << "Starting video thread" << std::endl;
+        UDPHandler udpHandler; // Using the new UDPHandler class
 
         while (true) {
-            std::cout << "Starting color tracking" << std::endl;
-            cv::Mat image = udpHandler.receiveFrame();
-            if (image.empty()) {
-                std::cerr << "Could not decode frame!" << std::endl;
-                continue;
+            std::cout << "Starting video loop" << std::endl;
+            cv::Mat frame = udpHandler.receiveFrame(); // Receiving frame using UDPHandler
+
+            if (!frame.empty()) {
+                std::cout << "Received frame of size: " << frame.size() << std::endl;
+                cv::imshow("Received Video", frame);
+            } else {
+                std::cerr << "Received empty frame" << std::endl;
             }
-
-            // Color detection and contour finding
-            cvtColor(image, hsv, cv::COLOR_BGR2HSV);
-            inRange(hsv, lower_bound, upper_bound, mask);
-            bitwise_and(image, image, segmented, mask);
-            findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-            double weightedSumX = 0.0, weightedSumY = 0.0, totalArea = 0.0;
-
-            for (const auto &contour: contours) {
-                double area = contourArea(contour);
-                if (area > min_contour_area) {
-                    cv::Moments M = moments(contour);
-                    if (M.m00 != 0) {
-                        cv::Point2f centroid(static_cast<float>(M.m10 / M.m00), static_cast<float>(M.m01 / M.m00));
-                        weightedSumX += centroid.x * area;
-                        weightedSumY += centroid.y * area;
-                        totalArea += area;
-
-                        circle(image, centroid, 5, cv::Scalar(255, 0, 0), -1);
-                        std::string label = "Size: " + std::to_string(area) + " px";
-                        putText(image, label, centroid, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1,
-                                cv::LINE_AA);
-                    }
-                }
-            }
-
-            if (totalArea > 0) {
-                cv::Point2f overallCentroid(static_cast<float>(weightedSumX / totalArea),
-                                            static_cast<float>(weightedSumY / totalArea));
-                circle(image, overallCentroid, 10, cv::Scalar(0, 0, 255), -1);
-
-                // Calculate the horizontal difference from the center of the screen
-                float screenCenterX = segmented.cols / 2.0f;
-                float difference = overallCentroid.x - screenCenterX;
-
-                std::cout << "Difference: " << difference << std::endl;
-
-                //TODO: Implement an autonome steering function to keep the ball in the center of the screen
-
-            }
-
-            imshow("Color Tracking", image); //"image" for raw and "segmented" for only the color
 
             if (cv::waitKey(10) == 'q') {
                 break;
             }
         }
     }
-    catch (std::exception &e) {
+    catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
 }
+
+// New functions from Robert
+//
+std::vector<std::string> splitter(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+// Connects to the server
+int connect_to_server(const std::string& host, int port) {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == -1) {
+        std::cerr << "Could not create socket" << std::endl;
+        return -1;
+    }
+
+    sockaddr_in server;
+    server.sin_addr.s_addr = inet_addr(host.c_str());
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+
+    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
+        perror("Connect failed. Error");
+        return -1;
+    }
+
+    std::cout << "Connected to server." << std::endl;
+    return sock;
+}
+
 

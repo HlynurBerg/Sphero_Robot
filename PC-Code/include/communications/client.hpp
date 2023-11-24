@@ -17,7 +17,7 @@
 
 void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
 
-//
+
 class UDPHandler {
 public:
     UDPHandler();
@@ -32,12 +32,6 @@ private:
     boost::asio::ip::udp::endpoint remote_endpoint_;
 };
 
-class VideoHandler {
-public:
-    void handle_video(bool enableColorTracking);
-
-private:
-    void colorTracking();
-};
+void handle_video();
 
 #endif//SPHERO_ROBOT_CLIENT_HPP
