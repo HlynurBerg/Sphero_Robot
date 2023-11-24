@@ -88,9 +88,8 @@ std::string UDPHandler::base64_decode(const std::string &in) {
     return out;
 }
 
-void handle_video(cv::Mat& frame, std::mutex& frame_mutex)
+void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
     try {
-        std::cout << "Starting video loop" << std::endl;
         UDPHandler udpHandler; // Using the new UDPHandler class
 
         while (true) {
@@ -115,7 +114,7 @@ void handle_video(cv::Mat& frame, std::mutex& frame_mutex)
     catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
-
+}
 
 // New functions from Robert
 //
