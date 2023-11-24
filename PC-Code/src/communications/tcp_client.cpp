@@ -94,16 +94,15 @@ void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
 
         while (true) {
             cv::Mat local_frame = udpHandler.receiveFrame(); // Receiving local_frame using UDPHandler
-
             if (!local_frame.empty()) {
-                std::cout << "Received local_frame of size: " << local_frame.size() << std::endl;
-                cv::imshow("Received Video", local_frame);
-            } else {
-                std::cerr << "Received empty local_frame" << std::endl;
+
                 { // Scoped lock
                     std::lock_guard<std::mutex> lock(frame_mutex);
                     frame = local_frame; // Copying the shared data under the lock
                 }
+                //cv::imshow("Video", local_frame);
+            } else {
+                std::cerr << "Received empty local_frame" << std::endl;
             }
 
             if (cv::waitKey(10) == 'q') {

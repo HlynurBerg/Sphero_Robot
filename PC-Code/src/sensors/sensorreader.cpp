@@ -4,8 +4,8 @@
 float colorTracker(cv::Mat image) {
     try {
         //TODO: Define color bounds as a variable, let used decide
-        cv::Scalar lower_bound(13, 175, 50);
-        cv::Scalar upper_bound(23, 255, 255);
+        cv::Scalar lower_bound(10, 150, 50);
+        cv::Scalar upper_bound(25, 255, 255);
         // Define smallest detected object
         int min_contour_area = 500;
 
@@ -34,38 +34,42 @@ float colorTracker(cv::Mat image) {
                     weightedSumY += centroid.y * area;
                     totalArea += area;
 
-                    // Draw circle and label, if showing image
                     /*
                     circle(image, centroid, 5, cv::Scalar(255, 0, 0), -1);
                     std::string label = "Size: " + std::to_string(area) + " px";
                     putText(image, label, centroid, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1,
                             cv::LINE_AA);
+
+                    //show the picture
+                    cv::imshow("Color Tracking", image);
                     */
                 }
             }
         }
-
+        float difference = 0.0;
         if (totalArea > 0) {
             cv::Point2f overallCentroid(static_cast<float>(weightedSumX / totalArea),
                                         static_cast<float>(weightedSumY / totalArea));
 
+            /*
             // Draw the overall centroid
-            // circle(image, overallCentroid, 10, cv::Scalar(0, 0, 255), -1);
+            circle(image, overallCentroid, 10, cv::Scalar(0, 0, 255), -1);
+            */
 
             // Calculate the horizontal difference from the center of the screen
             float screenCenterX = segmented.cols / 2.0f;
-            float difference = overallCentroid.x - screenCenterX;
-
-            std::cout << "Difference: " << difference << std::endl;
-
-            return difference;
+            difference = overallCentroid.x - screenCenterX;
+            // Normalize to [-1, 1]
+            difference = difference / screenCenterX;
         }
+        return difference;
     }
 
 
     catch (std::exception &e) {
+        std::cout << "test" << std::endl;
         std::cerr << e.what() << std::endl;
-        return 0;
+        return 0.0;
     }
 }
 

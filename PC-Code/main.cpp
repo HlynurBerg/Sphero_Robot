@@ -5,7 +5,6 @@
 #include "communications/client.hpp"
 #include "sensors/sensordata.hpp"
 #include "control/motorcontroller.hpp"
-#include "sensors/colortracker.hpp"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -51,6 +50,8 @@ int main(int argc, char *argv[]) {
         enableColorTracking = true;
     }
 
+    float diff = 0.0;
+
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
     // Main loop now only handles window events
     bool runLoop = true;
@@ -67,17 +68,25 @@ int main(int argc, char *argv[]) {
         double distance_mm = dataReceiver.getDistanceMm(); //TODO: This is just for testing, correct it later
         double speed_y = dataReceiver.getSpeedY(); //TODO: This is just for testing, correct it later
 
-        std::cout << "Battery: " << battery_percentage
-                  << "%, Distance: " << distance_mm
-                  << "mm, Speed Y: " << speed_y << " m/s" << std::endl;
+        //std::cout << "Battery: " << battery_percentage
+        //          << "%, Distance: " << distance_mm
+        //          << "mm, Speed Y: " << speed_y << " m/s" << std::endl;
+        battery_percentage;
+        distance_mm;
+        speed_y;
 
         //Steering the RVR
         if (enableColorTracking) {
-            float diff = colorTracker(frame);
             {
                 std::lock_guard<std::mutex> lock(frame_mutex);
+                diff = colorTracker(frame);
+            }
+            std::cout << "diff: " << diff << std::endl;
+            {
+                std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = followMe(diff, distance_mm);
             }
+            std::cout << "leftBelt: " << steer.leftBelt << " rightBelt: " << steer.rightBelt << std::endl;
         }
 
         else {
