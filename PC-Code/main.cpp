@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
 
     cv::Mat frame;
     std::mutex frame_mutex;
+    cv::Mat localframe;
 
     std::thread video_thread([&]() {
         handle_video(std::ref(frame), std::ref(frame_mutex));
@@ -63,10 +64,12 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        dataReceiver.updateData(); // Update data from server //TODO: This is just for testing, correct it later
-        double battery_percentage = dataReceiver.getBatteryPercentage(); //TODO: This is just for testing, correct it later
-        double distance_mm = dataReceiver.getDistanceMm(); //TODO: This is just for testing, correct it later
-        double speed_y = dataReceiver.getSpeedY(); //TODO: This is just for testing, correct it later
+
+        //TODO: add mutex for this data. Should not matter much, but also consider LARS
+        dataReceiver.updateData(); // Update data from server
+        double battery_percentage = dataReceiver.getBatteryPercentage();
+        double distance_mm = dataReceiver.getDistanceMm();
+        double speed_y = dataReceiver.getSpeedY();
 
         //std::cout << "Battery: " << battery_percentage
         //          << "%, Distance: " << distance_mm
@@ -79,21 +82,24 @@ int main(int argc, char *argv[]) {
         if (enableColorTracking) {
             {
                 std::lock_guard<std::mutex> lock(frame_mutex);
-                diff = colorTracker(frame);
+                localframe = frame;
             }
+            diff = colorTracker(localframe);
             std::cout << "diff: " << diff << std::endl;
+            TankSteering tempsteer = followMe(diff, distance_mm);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
-                steer = followMe(diff, distance_mm);
+                steer = tempsteer;
             }
             std::cout << "leftBelt: " << steer.leftBelt << " rightBelt: " << steer.rightBelt << std::endl;
         }
 
         else {
             const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
+            TankSteering tempsteer = getTankSteering(keyboardState, joystick, distance_mm);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
-                steer = getTankSteering(keyboardState, joystick, distance_mm);
+                steer = tempsteer;
             }
 
         }
