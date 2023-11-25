@@ -53,7 +53,7 @@ void handle_controlling(TankSteering& steer, std::mutex& steer_mutex) {
 
 UDPHandler::UDPHandler()
     : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string("10.25.46.49"), 6001) {
-    socket_.open(boost::asio::ip::udp::v4());//TODO Se på dette Robert! Ikke helt sikker her
+    socket_.open(boost::asio::ip::udp::v4());
     sendMessage("Hello"); // Send initial message upon creation
 }
 

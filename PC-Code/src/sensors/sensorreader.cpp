@@ -7,7 +7,7 @@ float colorTracker(cv::Mat image) {
         cv::Scalar lower_bound(10, 150, 50);
         cv::Scalar upper_bound(25, 255, 255);
         // Define smallest detected object
-        int min_contour_area = 500;
+        int min_contour_area = 250;
 
         cv::Mat hsv, mask, segmented;
         std::vector<std::vector<cv::Point>> contours;
