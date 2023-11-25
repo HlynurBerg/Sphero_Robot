@@ -25,9 +25,9 @@ TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float max
 }
 
 float autoStop(int value, int lowerBound, int upperBound) {
-    if (value < lowerBound) return 0.0f;
-    if (value > upperBound) return 1.0f;
-    // Linear interpolation between 200 and 1000
+    if (value < lowerBound) return 0.0;
+    if (value > upperBound) return 1.0;
+    // Linear interpolation
     float stop = (value - lowerBound) / (upperBound - lowerBound);
     return stop;
 }
@@ -87,7 +87,7 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick,
         //Deadzone
         if (inputStrength > 0.2) {
             float stop = 1;
-            if (y > 0) {
+            if (y < 0) {
                 stop = autoStop(distance, 100, 500);
             }
             leftBeltFloat = -y*stop + steer*x;
@@ -103,7 +103,7 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick,
 
 TankSteering followMe(float difference, int distance) {
     //parameters for how the robot should drive while autonomous
-    float stop = autoStop(distance, 100, 1000);
+    float stop = autoStop(distance, 100, 200);
     float inputStrength = 1;
     float maxSpeed = 0.1;
     float turnSpeed = 0.7;
