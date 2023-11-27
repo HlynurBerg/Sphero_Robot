@@ -11,7 +11,7 @@
 #include <cmath>
 #include <nlohmann/json.hpp>
 
-float colorTracker(cv::Mat frame);
+std::pair<float, bool>  colorTracker(cv::Mat frame);
 
 class DataReceiver {
 public:

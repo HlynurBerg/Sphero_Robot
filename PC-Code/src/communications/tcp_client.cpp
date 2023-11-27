@@ -148,5 +148,3 @@ int connect_to_server(const std::string& host, int port) {
     std::cout << "Connected to server." << std::endl;
     return sock;
 }
-
-

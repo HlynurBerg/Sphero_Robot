@@ -14,7 +14,7 @@ public:
 float autoStop(int value);
 TankSteering normalizeBelts(float leftBeltFloat, float rightBeltFloat, float maxSpeed, float inputStrength, float turnSpeed);
 TankSteering getTankSteering(const Uint8 *keyboardState, SDL_Joystick *joystick, int distance);
-TankSteering followMe(float difference, int distance);
+TankSteering followMe(float difference, int distance, bool isValid);
 
 
 #endif//SPHERO_ROBOT_MOTORCONTROLLER_HPP

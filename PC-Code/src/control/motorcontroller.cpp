@@ -101,15 +101,23 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick,
     return normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
 }
 
-TankSteering followMe(float difference, int distance) {
+TankSteering followMe(float difference, int distance, bool isValid) {
     //parameters for how the robot should drive while autonomous
-    float stop = autoStop(distance, 100, 200);
-    float inputStrength = 1;
-    float maxSpeed = 0.1;
-    float turnSpeed = 0.7;
-    float leftBeltFloat = stop + difference;
-    float rightBeltFloat = stop - difference;
+    if (isValid) {
+        float stop = autoStop(distance, 100, 200);
+        float inputStrength = 1;
+        float maxSpeed = 0.1;
+        float turnSpeed = 0.7;
+        float leftBeltFloat = stop + difference;
+        float rightBeltFloat = stop - difference;
 
-    TankSteering result = normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
-    return result;
+        TankSteering result = normalizeBelts(leftBeltFloat, rightBeltFloat, maxSpeed, inputStrength, turnSpeed);
+        return result;
+    }
+    else {
+        TankSteering result;
+        result.leftBelt = 10;
+        result.rightBelt = -10;
+        return result;
+    }
 }

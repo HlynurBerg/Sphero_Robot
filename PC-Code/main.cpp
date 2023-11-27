@@ -42,15 +42,7 @@ int main(int argc, char *argv[]) {
     std::thread video_thread([&]() {
         handle_video(std::ref(frame), std::ref(frame_mutex));
     });
-
     bool enableColorTracking = false;
-    std::cout << "Enter 1 for Sphero control, 2 for color tracking: ";
-    int mode;
-    std::cin >> mode;
-    if (mode == 2) {
-        enableColorTracking = true;
-    }
-
     float diff = 0.0;
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
@@ -77,16 +69,21 @@ int main(int argc, char *argv[]) {
         battery_percentage;
         distance_mm;
         speed_y;
-
+        const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
+        //TODO: remove this when webpage is working. this is better than waiting for user input through terminal
+        if (keyboardState[SDL_SCANCODE_Z]){enableColorTracking = true;}
+        if (keyboardState[SDL_SCANCODE_X]){enableColorTracking = false;}
         //Steering the RVR
         if (enableColorTracking) {
             {
                 std::lock_guard<std::mutex> lock(frame_mutex);
                 localframe = frame;
             }
-            diff = colorTracker(localframe);
+            std::pair<float, bool> result = colorTracker(localframe);
+            diff = result.first;
+            bool isValid = result.second;
             std::cout << "diff: " << diff << std::endl;
-            TankSteering tempsteer = followMe(diff, distance_mm);
+            TankSteering tempsteer = followMe(diff, distance_mm, isValid);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = tempsteer;
@@ -95,7 +92,6 @@ int main(int argc, char *argv[]) {
         }
 
         else {
-            const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
             TankSteering tempsteer = getTankSteering(keyboardState, joystick, distance_mm);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);

@@ -1,14 +1,15 @@
 #include <sensors/colortracker.hpp>
 #include <sensors/sensordata.hpp>
 
-float colorTracker(cv::Mat image) {
+std::pair<float, bool> colorTracker(cv::Mat image) {
     try {
         //TODO: Define color bounds as a variable, let used decide
         cv::Scalar lower_bound(10, 150, 50);
         cv::Scalar upper_bound(25, 255, 255);
         // Define smallest detected object
         int min_contour_area = 250;
-
+        bool isValid = false;
+        float difference = 0.0f;
         cv::Mat hsv, mask, segmented;
         std::vector<std::vector<cv::Point>> contours;
 
@@ -27,6 +28,7 @@ float colorTracker(cv::Mat image) {
         for (const auto &contour: contours) {
             double area = contourArea(contour);
             if (area > min_contour_area) {
+                isValid = true; // Valid object found
                 cv::Moments M = moments(contour);
                 if (M.m00 != 0) {
                     cv::Point2f centroid(static_cast<float>(M.m10 / M.m00), static_cast<float>(M.m01 / M.m00));
@@ -46,7 +48,6 @@ float colorTracker(cv::Mat image) {
                 }
             }
         }
-        float difference = 0.0;
         if (totalArea > 0) {
             cv::Point2f overallCentroid(static_cast<float>(weightedSumX / totalArea),
                                         static_cast<float>(weightedSumY / totalArea));
@@ -62,14 +63,14 @@ float colorTracker(cv::Mat image) {
             // Normalize to [-1, 1]
             difference = difference / screenCenterX;
         }
-        return difference;
+        return std::make_pair(difference, isValid);
     }
 
 
     catch (std::exception &e) {
         std::cout << "test" << std::endl;
         std::cerr << e.what() << std::endl;
-        return 0.0;
+        return std::make_pair(0.0f, false);
     }
 }
 
