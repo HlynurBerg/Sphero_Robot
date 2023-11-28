@@ -24,12 +24,9 @@ int main(int argc, char *argv[]) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
 
-    // send reference to tanksteer struct to tcp_client
-
+    // Creating threads
     TankSteering steer;
     std::mutex steer_mutex;
-
-    // Make a thread for tanksteering and pass a reference to the tcp_client continuously
 
     std::thread steering_thread([&]() {
         handle_controlling(std::ref(steer), std::ref(steer_mutex));
@@ -37,13 +34,22 @@ int main(int argc, char *argv[]) {
 
     cv::Mat frame;
     std::mutex frame_mutex;
-    cv::Mat localframe;
 
     std::thread video_thread([&]() {
         handle_video(std::ref(frame), std::ref(frame_mutex));
     });
+
+    cv::Mat localframe;
+    std::pair<float, bool> result;
+    std::thread machinevision_thread([&]() {
+        {
+            std::lock_guard<std::mutex> lock(frame_mutex);
+            cv::Mat localframe = std::ref(frame);
+        }
+        result = colorTracker(std::ref(frame));
+    });
+
     bool enableColorTracking = false;
-    float diff = 0.0;
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
     // Main loop now only handles window events
@@ -75,12 +81,8 @@ int main(int argc, char *argv[]) {
         if (keyboardState[SDL_SCANCODE_X]){enableColorTracking = false;}
         //Steering the RVR
         if (enableColorTracking) {
-            {
-                std::lock_guard<std::mutex> lock(frame_mutex);
-                localframe = frame;
-            }
-            std::pair<float, bool> result = colorTracker(localframe);
-            diff = result.first;
+
+            float diff = result.first;
             bool isValid = result.second;
             std::cout << "diff: " << diff << std::endl;
             TankSteering tempsteer = followMe(diff, distance_mm, isValid);

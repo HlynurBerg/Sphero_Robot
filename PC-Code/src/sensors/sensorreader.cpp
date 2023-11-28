@@ -1,4 +1,3 @@
-#include <sensors/colortracker.hpp>
 #include <sensors/sensordata.hpp>
 
 std::pair<float, bool> colorTracker(cv::Mat image) {
