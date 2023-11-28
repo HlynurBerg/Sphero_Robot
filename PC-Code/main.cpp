@@ -115,7 +115,9 @@ int main(int argc, char *argv[]) {
     SDL_Quit();
 
     //Joining threads before closing program
-
+    if (machinevision_thread.joinable()) {
+        machinevision_thread.join();
+    }
     if (video_thread.joinable()) {
         video_thread.join();
     }
