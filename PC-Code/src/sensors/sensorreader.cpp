@@ -34,16 +34,6 @@ std::pair<float, bool> colorTracker(cv::Mat image) {
                     weightedSumX += centroid.x * area;
                     weightedSumY += centroid.y * area;
                     totalArea += area;
-
-                    /*
-                    circle(image, centroid, 5, cv::Scalar(255, 0, 0), -1);
-                    std::string label = "Size: " + std::to_string(area) + " px";
-                    putText(image, label, centroid, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1,
-                            cv::LINE_AA);
-
-                    //show the picture
-                    cv::imshow("Color Tracking", image);
-                    */
                 }
             }
         }
@@ -54,6 +44,7 @@ std::pair<float, bool> colorTracker(cv::Mat image) {
             /*
             // Draw the overall centroid
             circle(image, overallCentroid, 10, cv::Scalar(0, 0, 255), -1);
+            cv::imshow("Color Tracking", image);
             */
 
             // Calculate the horizontal difference from the center of the screen

@@ -44,9 +44,9 @@ int main(int argc, char *argv[]) {
     std::thread machinevision_thread([&]() {
         {
             std::lock_guard<std::mutex> lock(frame_mutex);
-            cv::Mat localframe = std::ref(frame);
+            localframe = std::ref(frame);
         }
-        result = colorTracker(std::ref(frame));
+        result = colorTracker(localframe);
     });
 
     bool enableColorTracking = false;
