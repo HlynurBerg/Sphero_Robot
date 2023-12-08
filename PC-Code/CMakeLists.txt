@@ -28,7 +28,6 @@ add_executable(main main.cpp
         src/control/motorcontroller.cpp
         src/communications/tcp_client.cpp
         src/communications/html5.cpp
-        src/communications/mock_server.cpp
         src/sensors/sensorreader.cpp
 
 
