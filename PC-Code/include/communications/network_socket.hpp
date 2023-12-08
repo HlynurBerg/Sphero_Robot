@@ -16,7 +16,7 @@
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-//#TODO: add a network_helper class to handle the conversion between bytes and int
+
 class network_helper {
 public:
     // Converts a 32-bit integer to a 4-byte array

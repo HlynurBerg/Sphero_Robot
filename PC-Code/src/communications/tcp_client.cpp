@@ -99,6 +99,7 @@ void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
                 { // Scoped lock
                     std::lock_guard<std::mutex> lock(frame_mutex);
                     frame = local_frame; // Copying the shared data under the lock
+
                 }
                 //cv::imshow("Video", local_frame);
             } else {

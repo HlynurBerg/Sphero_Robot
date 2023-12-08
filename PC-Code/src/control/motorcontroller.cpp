@@ -50,7 +50,7 @@ TankSteering getTankSteering(const Uint8* keyboardState, SDL_Joystick* joystick,
     //Tilt of the joystick
     float inputStrength = 1;
     //Speed of rotation
-    float turnSpeed = 0.5;
+    float turnSpeed = 0.6;
 
     //KBM inputs
     if(isUpPressed || isDownPressed || isLeftPressed || isRightPressed) {
@@ -106,8 +106,8 @@ TankSteering followMe(float difference, int distance, bool isValid) {
     if (isValid) {
         float stop = autoStop(distance, 100, 200);
         float inputStrength = 1;
-        float maxSpeed = 0.1;
-        float turnSpeed = 0.7;
+        float maxSpeed = 0.3;
+        float turnSpeed = 1.5;
         float leftBeltFloat = stop + difference;
         float rightBeltFloat = stop - difference;
 

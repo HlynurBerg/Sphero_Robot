@@ -1,7 +1,7 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 
 
-OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
+OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" OFF)
 
 IF (MSVC)
         add_compile_definitions("_WIN32_WINNT=0x0601")
@@ -18,6 +18,9 @@ set(HEADERS
         include/control/motorcontroller.hpp
         include/sensors/colortracker.hpp
         include/sensors/sensordata.hpp
+        include/communications/tcp_client.hpp
+        include/communications/html5.hpp
+        include/communications/mock_server.hpp
         )
 
 add_executable(main main.cpp
@@ -25,8 +28,10 @@ add_executable(main main.cpp
         src/control/motorcontroller.cpp
         src/communications/tcp_client.cpp
         src/communications/html5.cpp
+        src/communications/mock_server.cpp
         src/sensors/sensorreader.cpp
-        include/communications/network_socket.hpp
+
+
 )
 
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
