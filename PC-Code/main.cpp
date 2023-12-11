@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
     cv::Mat localframe;
     std::pair<float, bool> result;
-        std::thread machinevision_thread([&]() {
+    std::thread machinevision_thread([&]() {
         while (true) {
             {
                 std::lock_guard<std::mutex> lock(frame_mutex);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
             result = colorTracker(localframe);
         }
     });
-        bool enableColorTracking = false;
+    bool enableColorTracking = false;
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
     // Main loop now only handles window events

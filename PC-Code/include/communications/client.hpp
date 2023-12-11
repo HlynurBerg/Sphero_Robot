@@ -1,20 +1,39 @@
-#ifndef TCP_SERVER_HPP
-#define TCP_SERVER_HPP
 
-#include <boost/asio.hpp>
+
+#ifndef SPHERO_ROBOT_CLIENT_HPP
+#define SPHERO_ROBOT_CLIENT_HPP
+
+#include <SDL.h> //for User Input. Change when switching to html5 api
+#include <boost/asio.hpp> //for communicatoin
+#include <opencv2/opencv.hpp> //for image processing
 #include <iostream>
+#include <string>
+#include <boost/array.hpp>
+#include <thread>
+#include <vector>
+#include <cmath>
+#include <control/motorcontroller.hpp>
+#include <mutex>
+// get a reference to the TankSteering struct and pass it to the function
 
-class TCPServer {
+
+void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
+
+
+class UDPHandler {
 public:
-    TCPServer(short port);
-    void run();
+    UDPHandler();
+    void sendMessage(const std::string& message);
+    cv::Mat receiveFrame();
 
 private:
-    void acceptConnections();
+    std::string base64_decode(const std::string &in);
 
-    boost::asio::io_context io_context_;
-    boost::asio::ip::tcp::acceptor acceptor_;
+    boost::asio::io_service io_service_;
+    boost::asio::ip::udp::socket socket_;
+    boost::asio::ip::udp::endpoint remote_endpoint_;
 };
 
-#endif // TCP_SERVER_HPP
+void handle_video(cv::Mat& frame, std::mutex& frame_mutex);
 
+#endif//SPHERO_ROBOT_CLIENT_HPP

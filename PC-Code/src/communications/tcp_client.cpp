@@ -35,20 +35,20 @@ void handle_controlling(TankSteering& steer, std::mutex& steer_mutex) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Control the update rate
     }
 
-        //se på referanse
-        //TankSteering result = referanse
-        std::string command = std::to_string(steer.leftBelt) + ", " + std::to_string(steer.rightBelt) + "\n";
-        boost::system::error_code error;
-        socket.write_some(boost::asio::buffer(command), error);
+    //se på referanse
+    //TankSteering result = referanse
+    std::string command = std::to_string(steer.leftBelt) + ", " + std::to_string(steer.rightBelt) + "\n";
+    boost::system::error_code error;
+    socket.write_some(boost::asio::buffer(command), error);
 
-        std::cout << "Sending Command: " << command << std::endl;
+    std::cout << "Sending Command: " << command << std::endl;
 
-        if (error) {
-            std::cerr << "Error while sending data: " << error.message() << std::endl;
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    if (error) {
+        std::cerr << "Error while sending data: " << error.message() << std::endl;
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
 
 
 UDPHandler::UDPHandler()
