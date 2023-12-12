@@ -1,7 +1,7 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 
 
-OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" OFF)
+OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
 
 IF (MSVC)
         add_compile_definitions("_WIN32_WINNT=0x0601")
@@ -29,8 +29,7 @@ add_executable(main main.cpp
         src/communications/tcp_client.cpp
         src/communications/html5.cpp
         src/sensors/sensorreader.cpp
-
-
+        tests/client_tester.cpp
 )
 
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
@@ -54,7 +53,7 @@ target_link_libraries(main PRIVATE
 )
 
 add_subdirectory(src)
-
+add_subdirectory(tests)
 
 IF(NETWORKING_BUILD_TESTS)
 
@@ -68,5 +67,4 @@ IF(NETWORKING_BUILD_TESTS)
         FetchContent_MakeAvailable(Catch2)
 
         enable_testing()
-        add_subdirectory(tests)
 ENDIF()

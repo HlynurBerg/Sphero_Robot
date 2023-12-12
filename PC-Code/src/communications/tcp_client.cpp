@@ -1,7 +1,6 @@
 #include <communications/client.hpp>
 #include <control/motorcontroller.hpp>
 
-
 void handle_controlling(TankSteering& steer, std::mutex& steer_mutex) {
     // Your TCP client logic here
     boost::asio::io_service io_service;
