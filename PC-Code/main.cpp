@@ -5,6 +5,7 @@
 #include "communications/client.hpp"
 #include "sensors/sensordata.hpp"
 #include "control/motorcontroller.hpp"
+#include "communications/websocket.hpp"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -54,6 +55,31 @@ int main(int argc, char *argv[]) {
     bool enableColorTracking = false;
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
+
+    // WS code starts here - For testing purposes only
+    // Create an instance of io_context
+    net::io_context ioc;
+    // Create an instance of the UDPHandler for video frame reception
+    UDPHandler udpHandler;
+
+    // Set up the WebSocket server
+    tcp::endpoint endpoint(tcp::v4(), 8080); // Choose an appropriate port
+    WebSocketServer wsServer(ioc, endpoint, dataReceiver);
+
+    // Start a thread to handle video streaming
+    std::thread videoThread([&]() {
+        while (true) {
+            std::string base64_frame = udpHandler.receiveBase64Frame();
+            if (!base64_frame.empty()) {
+                wsServer.broadcastVideoFrame(base64_frame);
+            }
+        }
+    });
+
+    // Run the io_context in a separate thread
+    std::thread wsThread([&ioc](){ ioc.run(); });
+    // WS code ends here
+
     // Main loop now only handles window events
     bool runLoop = true;
     while (runLoop) {
@@ -125,6 +151,9 @@ int main(int argc, char *argv[]) {
     }
     if (steering_thread.joinable()) {
         steering_thread.join();
+    }
+    if (wsThread.joinable()) {
+        wsThread.join();
     }
     return 0;
 }
