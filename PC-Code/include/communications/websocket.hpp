@@ -115,7 +115,7 @@ class WebSocketServer {
     tcp::acceptor acceptor_;
     std::mutex mutex_;
     DataReceiver& dataReceiver_;
-    std::vector<std::shared_ptr<WebSocketSession>> sessions_; // Keep track of sessions
+    std::vector<std::shared_ptr<WebSocketSession>> sessions_; // Keep track of active sessions
 
 public:
     WebSocketServer(net::io_context& ioc, const tcp::endpoint& endpoint, DataReceiver& dataReceiver)

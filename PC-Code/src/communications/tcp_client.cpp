@@ -61,6 +61,13 @@ void UDPHandler::sendMessage(const std::string& message) {
     socket_.send_to(boost::asio::buffer(message), remote_endpoint_);
 }
 
+// For HTML/WS streaming (returns base64 encoded string)
+std::string UDPHandler::receiveBase64Frame() {
+    boost::array<char, 65536> recv_buf;
+    size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint_);
+    return std::string(recv_buf.data(), len);
+}
+
 cv::Mat UDPHandler::receiveFrame() {
     boost::array<char, 65536> recv_buf;
     size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint_);
@@ -115,7 +122,7 @@ void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
     }
 }
 
-// New functions from Robert
+// New functions from Robert ? <- Waz is daz?
 //
 std::vector<std::string> splitter(const std::string &s, char delimiter) {
     std::vector<std::string> tokens;

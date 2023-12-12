@@ -23,6 +23,7 @@ public:
     UDPHandler();
     void sendMessage(const std::string& message);
     cv::Mat receiveFrame();
+    std::string receiveBase64Frame();
 
 private:
     std::string base64_decode(const std::string &in);
