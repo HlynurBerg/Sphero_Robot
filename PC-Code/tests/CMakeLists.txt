@@ -1,11 +1,11 @@
 project(tests)
 
-add_subdirectory(communications)
-
 find_package(OpenCV REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 
-add_executable(client_tester client_tester.cpp)
+add_executable(client_tester client_tester.cpp
+../src/communications/tcp_client.cpp
+)
 add_test(NAME client_tester COMMAND client_tester)
 target_link_libraries(client_tester PRIVATE
         Boost::system Catch2::Catch2WithMain

@@ -20,7 +20,6 @@ set(HEADERS
         include/sensors/sensordata.hpp
         include/communications/tcp_client.hpp
         include/communications/html5.hpp
-        include/communications/mock_server.hpp
         )
 
 add_executable(main main.cpp
@@ -29,7 +28,6 @@ add_executable(main main.cpp
         src/communications/tcp_client.cpp
         src/communications/html5.cpp
         src/sensors/sensorreader.cpp
-        tests/client_tester.cpp
 )
 
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")

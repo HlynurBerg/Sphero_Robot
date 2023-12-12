@@ -2,7 +2,7 @@
 #define SPHERO_ROBOT_CLIENT_HPP
 
 #include <SDL.h> //for User Input. Change when switching to html5 api
-#include <boost/asio.hpp> //for communication
+#include <boost/asio.hpp> //for communicatoin
 #include <opencv2/opencv.hpp> //for image processing
 #include <iostream>
 #include <string>
@@ -13,6 +13,8 @@
 #include <control/motorcontroller.hpp>
 #include <mutex>
 // get a reference to the TankSteering struct and pass it to the function
+
+
 void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
 
 
