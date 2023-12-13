@@ -5,6 +5,7 @@ OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" OFF)
 
 IF (MSVC)
         add_compile_definitions("_WIN32_WINNT=0x0601")
+        add_compile_options(/bigobj)
 ENDIF()
 
 set(HEADERS
