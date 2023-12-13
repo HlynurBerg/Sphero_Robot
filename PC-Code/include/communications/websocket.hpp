@@ -148,19 +148,6 @@ private:
                     do_accept();
                 });
     }
-
-    void on_accept(beast::error_code ec, tcp::socket socket) {
-        if (ec) {
-            // Handle error
-            return;
-        }
-
-        // Create a new session for each connection
-        std::make_shared<WebSocketSession>(std::move(socket), dataReceiver_)->start();
-
-        do_accept();
-    }
-
 };
 
 #endif//SPHERO_ROBOT_SERVER_HPP
