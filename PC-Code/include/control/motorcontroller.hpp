@@ -8,7 +8,6 @@ class TankSteering { //consider changing to a struct. everything is public
 public:
     int leftBelt=0;
     int rightBelt=0;
-
 };
 
 float autoStop(int value);

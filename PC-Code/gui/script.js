@@ -54,6 +54,14 @@ document.getElementById('colorTrackingToggle').addEventListener('click', functio
     }
 });
 
+// Function to adjust the max speed of the robot
+document.getElementById('speedSlider').addEventListener('input', function() {
+    const speedValue = this.value;
+    document.getElementById('speedValue').textContent = speedValue;
+    const message = { type: 'setMaxSpeed', value: speedValue };
+    ws.send(JSON.stringify(message));
+});
+
 // Handle incoming WebSocket messages
 ws.onmessage = function(event) {
     console.log("Received data:", event.data);

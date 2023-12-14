@@ -7,6 +7,7 @@
 #include <boost/asio/strand.hpp>
 #include <mutex>
 #include <chrono>
+#include <nlohmann/json.hpp>
 
 #include "sensors/sensor_processing.hpp"
 
@@ -106,7 +107,6 @@ private:
 
         try {
             ws_.write(net::buffer(ss.str()));
-            //std::cout << "Sending data: " << ss.str() << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Error sending data: " << e.what() << std::endl;
         }
@@ -114,9 +114,25 @@ private:
 
     // Function to handle WebSocket messages
     void handleWebSocketMessage(const std::string& message) {
-        if (message == "{\"type\":\"toggleColorTracking\"}") {
-            colorTrackingState_ = !colorTrackingState_.load();
-            std::cout << "Color tracking toggled to " << (colorTrackingState_ ? "enabled" : "disabled") << std::endl;
+        try {
+            auto j = nlohmann::json::parse(message);
+
+            // Toggle color tracking
+            if (j["type"] == "toggleColorTracking") {
+                colorTrackingState_ = !colorTrackingState_.load();
+                std::cout << "Color tracking toggled to " << (colorTrackingState_ ? "enabled" : "disabled") << std::endl;
+            }
+
+            // Handle setMaxSpeed message
+            if (j["type"] == "setMaxSpeed") {
+                std::string speedStr = j["value"].get<std::string>();
+                float newMaxSpeed = std::stof(speedStr);
+                std::cout << "Max speed set to " << newMaxSpeed << std::endl;
+
+                // TODO: Update maxSpeed in TankSteering instance
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error parsing JSON message: " << e.what() << std::endl;
         }
     }
 
