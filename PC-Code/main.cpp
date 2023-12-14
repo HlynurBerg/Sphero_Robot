@@ -26,16 +26,14 @@ int main(int argc, char *argv[]) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
 
-    DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
+    // Create hardcoded data receiver and udp handler for easier changing between home and school network
+    DataReceiver dataReceiver("10.25.46.49", 6003);
+    UDPHandler udpHandler("10.25.46.49", 6001);
 
     ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForMachineVision;
     ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForVideoThread;
 
-    // Create an instance of the UDPHandler for video frame reception
-    UDPHandler udpHandler;
-
     // Creating threads
-
     TankSteering steer;
     std::mutex steer_mutex;
 
@@ -51,7 +49,6 @@ int main(int argc, char *argv[]) {
             frameQueueForVideoThread.push(frame);
         }
     });
-
 
     std::pair<float, bool> result;
 

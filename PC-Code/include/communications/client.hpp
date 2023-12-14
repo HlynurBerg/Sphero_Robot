@@ -21,7 +21,7 @@ void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
 
 class UDPHandler {
 public:
-    UDPHandler();
+    UDPHandler(const std::string& host, int port);
     void sendMessage(const std::string& message);
 
     cv::Mat receiveFrame();

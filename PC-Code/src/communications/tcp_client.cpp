@@ -51,8 +51,8 @@ void handle_controlling(TankSteering& steer, std::mutex& steer_mutex) {
 }
 
 
-UDPHandler::UDPHandler()
-    : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string("10.25.46.49"), 6001) {
+UDPHandler::UDPHandler(const std::string& host, int port)
+    : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string(host), port) {
     socket_.open(boost::asio::ip::udp::v4());
     sendMessage("Hello"); // Send initial message upon creation
 }
@@ -101,7 +101,7 @@ std::string UDPHandler::base64_decode(const std::string &in) {
 // This is now only used for testing purposes because the new thread-safe queue is used instead
 void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
     try {
-        UDPHandler udpHandler; // Using the new UDPHandler class
+        UDPHandler udpHandler("10.25.46.49", 6001); // Using the new UDPHandler class
 
         while (true) {
             cv::Mat local_frame = udpHandler.receiveFrame(); // Receiving local_frame using UDPHandler
