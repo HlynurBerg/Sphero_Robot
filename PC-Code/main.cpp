@@ -1,12 +1,14 @@
+#include <SDL.h>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <mutex>
+#include <opencv2/opencv.hpp>
 #include "communications/client.hpp"
 #include "communications/thread_safe_queue.hpp"
 #include "communications/websocket.hpp"
 #include "control/motorcontroller.hpp"
 #include "sensors/sensor_processing.hpp"
-#include <SDL.h>
-#include <iostream>
-#include <string>
-#include <thread>
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
