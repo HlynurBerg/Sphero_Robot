@@ -23,7 +23,6 @@ set(HEADERS
         )
 
 add_executable(main main.cpp
-        src/control/userinput.cpp
         src/control/motorcontroller.cpp
         src/communications/tcp_client.cpp
         src/communications/html5.cpp
