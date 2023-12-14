@@ -42,8 +42,16 @@ function updateSpeed(speed) {
 
 //Function to toggle between color tracking and manual control
 document.getElementById('colorTrackingToggle').addEventListener('click', function() {
+    this.classList.toggle('active');
     const message = { type: 'toggleColorTracking' };
     ws.send(JSON.stringify(message));
+
+    // Update the button text based on its state
+    if (this.classList.contains('active')) {
+        this.textContent = 'Color Tracking: ON';
+    } else {
+        this.textContent = 'Color Tracking: OFF';
+    }
 });
 
 // Handle incoming WebSocket messages

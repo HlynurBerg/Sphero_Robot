@@ -56,3 +56,17 @@ body {
     transform-origin: bottom;
     transform: translateX(-50%) rotate(-45deg);
 }
+/* Basic button styling */
+#colorTrackingToggle {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: gray;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+/* Styling for when the button is active */
+#colorTrackingToggle.active {
+    background-color: green; /* Color when toggled on */
+}
