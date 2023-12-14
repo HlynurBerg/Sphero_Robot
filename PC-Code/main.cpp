@@ -32,9 +32,11 @@ int main(int argc, char *argv[]) {
     DataReceiver data_receiver("10.25.46.49", 6003);
     UDPHandler udp_handler("10.25.46.49", 6001);
 
+    // Create thread safe queues for video frames
     ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_machine_vision;
     ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_video_thread;
 
+    // Create atomic variables for controlling the robot
     std::atomic<bool> enable_color_tracking(false);
     std::atomic<float> max_speed(0.3f);
 
