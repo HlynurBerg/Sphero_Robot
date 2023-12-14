@@ -23,16 +23,16 @@ class WebSocketSession : public std::enable_shared_from_this<WebSocketSession> {
 
     net::steady_timer timer_;
     std::mutex write_mutex_; // Mutex for synchronizing write operations
-
     std::atomic<bool>&color_tracking_state_;
+    std::atomic<float> new_max_speed_;
 
 public:
-    WebSocketSession(tcp::socket&& socket, DataReceiver& dataReceiver, std::atomic<bool>& colorTrackingState)
-        : ws_(std::move(socket)), data_receiver_(dataReceiver), timer_(ws_.get_executor()), color_tracking_state_(colorTrackingState) {}
+    WebSocketSession(tcp::socket&& socket, DataReceiver&data_receiver, std::atomic<bool>&color_tracking_state)
+        : ws_(std::move(socket)), data_receiver_(data_receiver), timer_(ws_.get_executor()), color_tracking_state_(color_tracking_state) {}
 
     void Start() {
         ws_.async_accept(
-                beast::bind_front_handler(&WebSocketSession::onAccept, shared_from_this()));
+                beast::bind_front_handler(&WebSocketSession::OnAccept, shared_from_this()));
     }
 
     void StartPeriodicSend() {
@@ -58,7 +58,7 @@ public:
     }
 
 private:
-    void onAccept(beast::error_code ec) {
+    void OnAccept(beast::error_code ec) {
         if (ec) {
             std::cerr << "WebSocket accept error: " << ec.message() << std::endl;
             return;
@@ -125,12 +125,12 @@ private:
 
             // Handle setMaxSpeed message
             if (j["type"] == "setMaxSpeed") {
-                std::string speedStr = j["value"].get<std::string>();
-                float newMaxSpeed = std::stof(speedStr);
-                std::cout << "Max speed set to " << newMaxSpeed << std::endl;
-
-                // TODO: Update maxSpeed in TankSteering instance
+                std::string speed_string = j["value"].get<std::string>();
+                float speed = std::stof(speed_string);
+                new_max_speed_.store(speed);
+                std::cout << "Max speed set to " << new_max_speed_.load() << std::endl;
             }
+
         } catch (const std::exception& e) {
             std::cerr << "Error parsing JSON message: " << e.what() << std::endl;
         }
@@ -145,6 +145,7 @@ class WebSocketServer {
     DataReceiver&data_receiver_;
     std::vector<std::shared_ptr<WebSocketSession>> sessions_; // Keep track of active sessions
     std::atomic<bool>&color_tracking_state_;
+    std::atomic<float> new_max_speed_;
 
 public:
     WebSocketServer(net::io_context& ioc, const tcp::endpoint& endpoint, DataReceiver& dataReceiver, std::atomic<bool>& colorTrackingState)

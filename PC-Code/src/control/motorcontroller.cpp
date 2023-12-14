@@ -33,7 +33,7 @@ float AutoStop(int value, int lower_bound, int upper_bound) {
 }
 
 
-TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystick, int distance) {
+TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystick, int distance, float max_speed) {
 
     float left_belt_float = 0.0, right_belt_float = 0.0;
 
@@ -45,8 +45,6 @@ TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystic
 
     //Tune this variable to tune steering strength while driving
     float steer = 0.5;
-    //Max speed of the robot
-    float max_speed = 0.3;
     //Tilt of the joystick
     float input_strength = 1;
     //Speed of rotation
@@ -101,12 +99,11 @@ TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystic
     return NormalizeBelts(left_belt_float, right_belt_float, max_speed, input_strength, turn_speed);
 }
 
-TankSteering FollowMe(float difference, int distance, bool is_valid) {
+TankSteering FollowMe(float difference, int distance, bool is_valid, float max_speed) {
     //parameters for how the robot should drive while autonomous
     if (is_valid) {
         float stop = AutoStop(distance, 100, 200);
         float input_strength = 1;
-        float max_speed = 0.1;
         float turn_speed = 0.7;
         float left_belt_float = stop + difference;
         float right_belt_float = stop - difference;

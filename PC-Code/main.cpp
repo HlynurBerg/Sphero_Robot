@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
     ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_video_thread;
 
     std::atomic<bool> enable_color_tracking(false);
+    std::atomic<float> max_speed(0.3f);
 
     // Creating threads
     TankSteering steer;
@@ -112,7 +113,7 @@ int main(int argc, char *argv[]) {
             float diff = result.first;
             bool is_valid = result.second;
             std::cout << "diff: " << diff << std::endl;
-            TankSteering temp_steer = FollowMe(diff, distance_mm, is_valid);
+            TankSteering temp_steer = FollowMe(diff, distance_mm, is_valid, max_speed);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = temp_steer;
@@ -121,7 +122,7 @@ int main(int argc, char *argv[]) {
         }
 
         else {
-            TankSteering temp_steer = GetTankSteering(keyboard_state, joystick, distance_mm);
+            TankSteering temp_steer = GetTankSteering(keyboard_state, joystick, distance_mm, max_speed);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = temp_steer;
