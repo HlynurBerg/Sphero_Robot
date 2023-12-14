@@ -24,11 +24,11 @@ class WebSocketSession : public std::enable_shared_from_this<WebSocketSession> {
     net::steady_timer timer_;
     std::mutex write_mutex_; // Mutex for synchronizing write operations
     std::atomic<bool>&color_tracking_state_;
-    std::atomic<float> new_max_speed_;
+    std::atomic<float>&new_max_speed_;
 
 public:
-    WebSocketSession(tcp::socket&& socket, DataReceiver&data_receiver, std::atomic<bool>&color_tracking_state)
-        : ws_(std::move(socket)), data_receiver_(data_receiver), timer_(ws_.get_executor()), color_tracking_state_(color_tracking_state) {}
+    WebSocketSession(tcp::socket&& socket, DataReceiver&data_receiver, std::atomic<bool>&color_tracking_state, std::atomic<float>&new_max_speed)
+        : ws_(std::move(socket)), data_receiver_(data_receiver), timer_(ws_.get_executor()), color_tracking_state_(color_tracking_state), new_max_speed_(new_max_speed) {}
 
     void Start() {
         ws_.async_accept(
@@ -145,11 +145,11 @@ class WebSocketServer {
     DataReceiver&data_receiver_;
     std::vector<std::shared_ptr<WebSocketSession>> sessions_; // Keep track of active sessions
     std::atomic<bool>&color_tracking_state_;
-    std::atomic<float> new_max_speed_;
+    std::atomic<float>&new_max_speed_;
 
 public:
-    WebSocketServer(net::io_context& ioc, const tcp::endpoint& endpoint, DataReceiver& dataReceiver, std::atomic<bool>& colorTrackingState)
-        : ioc_(ioc), acceptor_(ioc, endpoint), data_receiver_(dataReceiver), color_tracking_state_(colorTrackingState) {
+    WebSocketServer(net::io_context &ioc, const tcp::endpoint &endpoint, DataReceiver &dataReceiver, std::atomic<bool> &colorTrackingState, std::atomic<float> &maxSpeed)
+        : ioc_(ioc), acceptor_(ioc, endpoint), data_receiver_(dataReceiver), color_tracking_state_(colorTrackingState), new_max_speed_(maxSpeed) {
         DoAccept();
     }
 
@@ -169,7 +169,7 @@ private:
                 [this](beast::error_code ec, tcp::socket socket) {
                     if (!ec) {
                         // Create a new session and add it to the sessions vector
-                        auto session = std::make_shared<WebSocketSession>(std::move(socket), data_receiver_, color_tracking_state_);
+                        auto session = std::make_shared<WebSocketSession>(std::move(socket), data_receiver_, color_tracking_state_, new_max_speed_);
                         std::lock_guard<std::mutex> lock(mutex_);
                         sessions_.push_back(session);
                         session->Start();

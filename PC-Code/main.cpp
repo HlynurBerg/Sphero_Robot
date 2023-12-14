@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     // Set up the WebSocket server
     tcp::endpoint endpoint(tcp::v4(), 8080);
-    WebSocketServer wsServer(ioc, endpoint, data_receiver, enable_color_tracking);
+    WebSocketServer wsServer(ioc, endpoint, data_receiver, enable_color_tracking, max_speed);
 
     std::thread video_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
