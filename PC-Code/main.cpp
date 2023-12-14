@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    sdl_joystick *joystick = nullptr;
+    SDL_joystick *joystick = nullptr;
     if (SDL_NumJoysticks() > 0) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
