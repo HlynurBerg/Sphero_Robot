@@ -28,7 +28,9 @@ int main(int argc, char *argv[]) {
 
     DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
 
-    ThreadSafeQueue<std::string> frameQueue;
+    ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForMachineVision;
+    ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForVideoThread;
+
     // Create an instance of the UDPHandler for video frame reception
     UDPHandler udpHandler;
 
@@ -44,18 +46,20 @@ int main(int argc, char *argv[]) {
     // producerThread receives undecoded base64 video frames and pushes them to the frameQueue
     std::thread producerThread([&]() {
         while (true) {
-            std::string base64_frame = udpHandler.receiveBase64Frame();
-            frameQueue.push(std::move(base64_frame));
+            auto frame = std::make_shared<std::string>(udpHandler.receiveBase64Frame());
+            frameQueueForMachineVision.push(frame);
+            frameQueueForVideoThread.push(frame);
         }
     });
+
 
     std::pair<float, bool> result;
 
     std::thread machinevision_thread([&]() {
-        std::string base64_frame;
+        std::shared_ptr<std::string> base64_frame;
         while (true) {
-            frameQueue.wait_and_pop(base64_frame);
-            std::string decoded_data = udpHandler.base64_decode(base64_frame);
+            frameQueueForMachineVision.wait_and_pop(base64_frame);
+            std::string decoded_data = udpHandler.base64_decode(*base64_frame);
             std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
             cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
 
@@ -74,11 +78,11 @@ int main(int argc, char *argv[]) {
     WebSocketServer wsServer(ioc, endpoint, dataReceiver);
 
     std::thread videoThread([&]() {
-        std::string base64_frame;
+        std::shared_ptr<std::string> base64_frame;
         while (true) {
-            frameQueue.wait_and_pop(base64_frame);
-            if (!base64_frame.empty()) {
-                wsServer.broadcastVideoFrame(base64_frame);
+            frameQueueForVideoThread.wait_and_pop(base64_frame);
+            if (!base64_frame->empty()) {
+                wsServer.broadcastVideoFrame(*base64_frame);
             }
         }
     });
