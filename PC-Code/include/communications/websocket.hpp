@@ -23,9 +23,11 @@ class WebSocketSession : public std::enable_shared_from_this<WebSocketSession> {
     net::steady_timer timer_;
     std::mutex write_mutex_; // Mutex for synchronizing write operations
 
+    std::atomic<bool>& colorTrackingState_;
+
 public:
-    explicit WebSocketSession(tcp::socket&& socket, DataReceiver& dataReceiver)
-        : ws_(std::move(socket)), dataReceiver_(dataReceiver), timer_(ws_.get_executor()) {}
+    WebSocketSession(tcp::socket&& socket, DataReceiver& dataReceiver, std::atomic<bool>& colorTrackingState)
+        : ws_(std::move(socket)), dataReceiver_(dataReceiver), timer_(ws_.get_executor()), colorTrackingState_(colorTrackingState) {}
 
     void start() {
         ws_.async_accept(
@@ -38,7 +40,6 @@ public:
                 [self = shared_from_this()](beast::error_code ec) {
                     if (!ec) {
                         self->send_data();
-                        //self->handleWebSocketMessage();
                         self->start_periodic_send(); // Reschedule
                     }
                 });
@@ -47,8 +48,6 @@ public:
     void send_base64_video_frame(const std::string& base64_frame) {
         std::lock_guard<std::mutex> guard(write_mutex_); // Lock for thread safety
         std::string message = R"({"type":"video","data":")" + base64_frame + "\"}";
-
-        //std::cout << "Sending video frame: " << message.substr(0, 30) << "... [truncated]" << std::endl;
 
         try {
             ws_.write(net::buffer(message));
@@ -77,9 +76,13 @@ private:
 
     void on_read(beast::error_code ec, std::size_t bytes_transferred) {
         if (!ec) {
+            std::string received_msg = beast::buffers_to_string(buffer_.data());
             std::cout << "Received message: " << beast::buffers_to_string(buffer_.data()) << std::endl;
 
             buffer_.consume(bytes_transferred);
+
+            // Handle the WebSocket message
+            handleWebSocketMessage(received_msg);
 
             // Send data periodically
             start_periodic_send();
@@ -103,7 +106,7 @@ private:
 
         try {
             ws_.write(net::buffer(ss.str()));
-            std::cout << "Sending data: " << ss.str() << std::endl;
+            //std::cout << "Sending data: " << ss.str() << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Error sending data: " << e.what() << std::endl;
         }
@@ -111,10 +114,9 @@ private:
 
     // Function to handle WebSocket messages
     void handleWebSocketMessage(const std::string& message) {
-        if (message == "toggleColorTracking") {
-            // Toggle color tracking state
-            // Note: You need to decide how to access or modify the color tracking state from here
-            // This might involve accessing a shared state or sending a signal to the main application logic
+        if (message == "{\"type\":\"toggleColorTracking\"}") {
+            colorTrackingState_ = !colorTrackingState_.load();
+            std::cout << "Color tracking toggled to " << (colorTrackingState_ ? "enabled" : "disabled") << std::endl;
         }
     }
 
@@ -126,10 +128,11 @@ class WebSocketServer {
     std::mutex mutex_;
     DataReceiver& dataReceiver_;
     std::vector<std::shared_ptr<WebSocketSession>> sessions_; // Keep track of active sessions
+    std::atomic<bool>& colorTrackingState_;
 
 public:
-    WebSocketServer(net::io_context& ioc, const tcp::endpoint& endpoint, DataReceiver& dataReceiver)
-        : ioc_(ioc), acceptor_(ioc, endpoint), dataReceiver_(dataReceiver) {
+    WebSocketServer(net::io_context& ioc, const tcp::endpoint& endpoint, DataReceiver& dataReceiver, std::atomic<bool>& colorTrackingState)
+        : ioc_(ioc), acceptor_(ioc, endpoint), dataReceiver_(dataReceiver), colorTrackingState_(colorTrackingState) {
         do_accept();
     }
 
@@ -149,7 +152,7 @@ private:
                 [this](beast::error_code ec, tcp::socket socket) {
                     if (!ec) {
                         // Create a new session and add it to the sessions vector
-                        auto session = std::make_shared<WebSocketSession>(std::move(socket), dataReceiver_);
+                        auto session = std::make_shared<WebSocketSession>(std::move(socket), dataReceiver_, colorTrackingState_);
                         std::lock_guard<std::mutex> lock(mutex_);
                         sessions_.push_back(session);
                         session->start();

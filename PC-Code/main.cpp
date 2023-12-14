@@ -35,6 +35,8 @@ int main(int argc, char *argv[]) {
     ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForMachineVision;
     ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForVideoThread;
 
+    std::atomic<bool> enableColorTracking(false);
+
     // Creating threads
     TankSteering steer;
     std::mutex steer_mutex;
@@ -67,14 +69,12 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    bool enableColorTracking = false;
-
     // Create an instance of io_context
     net::io_context ioc;
 
     // Set up the WebSocket server
     tcp::endpoint endpoint(tcp::v4(), 8080);
-    WebSocketServer wsServer(ioc, endpoint, dataReceiver);
+    WebSocketServer wsServer(ioc, endpoint, dataReceiver, enableColorTracking);
 
     std::thread videoThread([&]() {
         std::shared_ptr<std::string> base64_frame;
@@ -108,8 +108,8 @@ int main(int argc, char *argv[]) {
 
         const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
         //TODO: remove this when webpage is working. this is better than waiting for user input through terminal
-        if (keyboardState[SDL_SCANCODE_Z]){enableColorTracking = true;}
-        if (keyboardState[SDL_SCANCODE_X]){enableColorTracking = false;}
+        /*if (keyboardState[SDL_SCANCODE_Z]){enableColorTracking = true;}
+        if (keyboardState[SDL_SCANCODE_X]){enableColorTracking = false;}*/
         //Steering the RVR
         if (enableColorTracking) {
 
