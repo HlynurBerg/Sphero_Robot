@@ -12,17 +12,17 @@
 #include <cmath>
 #include <nlohmann/json.hpp>
 
-std::pair<float, bool>  colorTracker(cv::Mat frame);
+std::pair<float, bool> ColorTracker(cv::Mat image);
 
 class DataReceiver {
 public:
     DataReceiver(const std::string& host, int port);
 
     void connect();
-    void updateData();
-    double getBatteryPercentage() const;
-    double getDistanceMm() const;
-    double getSpeedY() const;
+    void UpdateData();
+    double GetBatteryPercentage() const;
+    double GetDistanceMm() const;
+    double GetSpeedY() const;
 
 private:
     boost::asio::io_service io_service_;
@@ -34,7 +34,7 @@ private:
     double distance_mm_;
     double speed_y_;
 
-    void parseData(const std::string& data);
+    void ParseData(const std::string& data);
 };
 
 

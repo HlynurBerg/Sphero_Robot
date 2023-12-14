@@ -16,16 +16,16 @@
 // get a reference to the TankSteering struct and pass it to the function
 
 
-void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
+void HandleControlling(TankSteering& steer, std::mutex& steer_mutex);
 
 
 class UDPHandler {
 public:
     UDPHandler(const std::string& host, int port);
-    void sendMessage(const std::string& message);
+    void Handshake(const std::string& message);
 
-    std::string receiveBase64Frame();
-    std::string base64_decode(const std::string &in);
+    std::string ReceiveBase64Frame();
+    std::string Base64Decode(const std::string &in);
 
 private:
     boost::asio::io_service io_service_;

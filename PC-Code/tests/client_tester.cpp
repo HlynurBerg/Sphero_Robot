@@ -8,8 +8,8 @@
 #include "catch2/catch_test_macros.hpp"
 
 
-// Assuming the definitions of TankSteering and handle_controlling() are accessible
-extern void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
+// Assuming the definitions of TankSteering and HandleControlling() are accessible
+extern void HandleControlling(TankSteering& steer, std::mutex& steer_mutex);
 extern void handle_video(cv::Mat& frame, std::mutex& frame_mutex);
 
 // Mock data for testing
@@ -28,17 +28,17 @@ TEST_CASE("TCP Communication Test") {
     TankSteering steer;
     std::mutex steer_mutex;
     std::thread clientThread([&steer, &steer_mutex]() {
-        handle_controlling(steer, steer_mutex);
+        HandleControlling(steer, steer_mutex);
     });
 
     // Allow time for server to set up and client to connect
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // Send mock data to the client (normally done within handle_controlling)
+    // Send mock data to the client (normally done within HandleControlling)
     {
         std::lock_guard<std::mutex> lock(steer_mutex);
-        steer.leftBelt = 1;  // Mock values
-        steer.rightBelt = 1;
+        steer.left_belt_ = 1;  // Mock values
+        steer.right_belt_ = 1;
     }
 
     clientThread.join();

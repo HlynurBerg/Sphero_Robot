@@ -1,19 +1,19 @@
 #include <sensors/sensor_processing.hpp>
 
-std::pair<float, bool> colorTracker(cv::Mat image) {
+std::pair<float, bool> ColorTracker(cv::Mat image) {
     try {
         //TODO: Define color bounds as a variable, let used decide
         cv::Scalar lower_bound(10, 150, 50);
         cv::Scalar upper_bound(25, 255, 255);
         // Define smallest detected object
         int min_contour_area = 250;
-        bool isValid = false;
+        bool is_valid = false;
         float difference = 0.0f;
         cv::Mat hsv, mask, segmented;
         std::vector<std::vector<cv::Point>> contours;
 
         if (image.empty()) {
-            //std::cerr << "Could not decode frame!" << std::endl;
+            std::cerr << "Could not decode frame!" << std::endl;
         }
 
         // Color and contour detection
@@ -22,38 +22,38 @@ std::pair<float, bool> colorTracker(cv::Mat image) {
         bitwise_and(image, image, segmented, mask);
         findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-        double weightedSumX = 0.0, weightedSumY = 0.0, totalArea = 0.0;
+        double weighted_sum_x = 0.0, weighted_sum_y = 0.0, total_area = 0.0;
 
         for (const auto &contour: contours) {
             double area = contourArea(contour);
             if (area > min_contour_area) {
-                isValid = true; // Valid object found
-                cv::Moments M = moments(contour);
-                if (M.m00 != 0) {
-                    cv::Point2f centroid(static_cast<float>(M.m10 / M.m00), static_cast<float>(M.m01 / M.m00));
-                    weightedSumX += centroid.x * area;
-                    weightedSumY += centroid.y * area;
-                    totalArea += area;
+                is_valid = true; // Valid object found
+                cv::Moments m_moments = moments(contour);
+                if (m_moments.m00 != 0) {
+                    cv::Point2f centroid(static_cast<float>(m_moments.m10 / m_moments.m00), static_cast<float>(m_moments.m01 / m_moments.m00));
+                    weighted_sum_x += centroid.x * area;
+                    weighted_sum_y += centroid.y * area;
+                    total_area += area;
                 }
             }
         }
-        if (totalArea > 0) {
-            cv::Point2f overallCentroid(static_cast<float>(weightedSumX / totalArea),
-                                        static_cast<float>(weightedSumY / totalArea));
+        if (total_area > 0) {
+            cv::Point2f overall_centroid(static_cast<float>(weighted_sum_x / total_area),
+                                        static_cast<float>(weighted_sum_y / total_area));
 
             /*
-            // Draw the overall centroid
-            circle(image, overallCentroid, 10, cv::Scalar(0, 0, 255), -1);
+            // Uncomment this to draw the overall centroid. Good for testing if it works!
+            circle(image, overall_centroid, 10, cv::Scalar(0, 0, 255), -1);
             cv::imshow("Color Tracking", image);
             */
 
             // Calculate the horizontal difference from the center of the screen
-            float screenCenterX = segmented.cols / 2.0f;
-            difference = overallCentroid.x - screenCenterX;
+            float screen_center_x = segmented.cols / 2.0f;
+            difference = overall_centroid.x - screen_center_x;
             // Normalize to [-1, 1]
-            difference = difference / screenCenterX;
+            difference = difference / screen_center_x;
         }
-        return std::make_pair(difference, isValid);
+        return std::make_pair(difference, is_valid);
     }
 
 
@@ -70,11 +70,11 @@ DataReceiver::DataReceiver(const std::string& host, int port)
     connect();
 }
 
-void DataReceiver::connect() {
+void DataReceiver::connect() { //TODO: capitalizing this name breaks everything. Maybe change name?
     socket_.connect(endpoint_);
 }
 
-void DataReceiver::updateData() {
+void DataReceiver::UpdateData() {
     boost::system::error_code error;
     while(socket_.available()) {
         size_t len = socket_.read_some(boost::asio::buffer(recv_buf_), error);
@@ -91,26 +91,26 @@ void DataReceiver::updateData() {
         if (pos != std::string::npos) {
             std::string json_message = data_buffer_.substr(0, pos);
             data_buffer_.erase(0, pos + 1);
-            parseData(json_message);
+            ParseData(json_message);
         } else {
             break;
         }
     }
 }
 
-double DataReceiver::getBatteryPercentage() const {
+double DataReceiver::GetBatteryPercentage() const {
     return battery_percentage_;
 }
 
-double DataReceiver::getDistanceMm() const {
+double DataReceiver::GetDistanceMm() const {
     return distance_mm_;
 }
 
-double DataReceiver::getSpeedY() const {
+double DataReceiver::GetSpeedY() const {
     return speed_y_;
 }
 
-void DataReceiver::parseData(const std::string& data) {
+void DataReceiver::ParseData(const std::string& data) {
     try {
         auto j = nlohmann::json::parse(data);
         battery_percentage_ = j["Battery"]["percentage"];

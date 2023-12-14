@@ -23,49 +23,49 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Joystick *joystick = nullptr;
+    sdl_joystick *joystick = nullptr;
     if (SDL_NumJoysticks() > 0) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
 
     // Create hardcoded data receiver and udp handler for easier changing between home and school network
-    DataReceiver dataReceiver("10.25.46.49", 6003);
-    UDPHandler udpHandler("10.25.46.49", 6001);
+    DataReceiver data_receiver("10.25.46.49", 6003);
+    UDPHandler udp_handler("10.25.46.49", 6001);
 
-    ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForMachineVision;
-    ThreadSafeQueue<std::shared_ptr<std::string>> frameQueueForVideoThread;
+    ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_machine_vision;
+    ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_video_thread;
 
-    std::atomic<bool> enableColorTracking(false);
+    std::atomic<bool> enable_color_tracking(false);
 
     // Creating threads
     TankSteering steer;
     std::mutex steer_mutex;
 
     std::thread steering_thread([&]() {
-        handle_controlling(std::ref(steer), std::ref(steer_mutex));
+        HandleControlling(std::ref(steer), std::ref(steer_mutex));
     });
 
-    // producerThread receives undecoded base64 video frames and pushes them to the frameQueue
-    std::thread producerThread([&]() {
+    // producer_thread receives undecoded base64 video frames and pushes them to the frameQueue
+    std::thread producer_thread([&]() {
         while (true) {
-            auto frame = std::make_shared<std::string>(udpHandler.receiveBase64Frame());
-            frameQueueForMachineVision.push(frame);
-            frameQueueForVideoThread.push(frame);
+            auto frame = std::make_shared<std::string>(udp_handler.ReceiveBase64Frame());
+            frame_queue_for_machine_vision.push(frame);
+            frame_queue_for_video_thread.push(frame);
         }
     });
 
     std::pair<float, bool> result;
 
-    std::thread machinevision_thread([&]() {
+    std::thread machine_vision_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
         while (true) {
-            frameQueueForMachineVision.wait_and_pop(base64_frame);
-            std::string decoded_data = udpHandler.base64_decode(*base64_frame);
+            frame_queue_for_machine_vision.WaitAndPop(base64_frame);
+            std::string decoded_data = udp_handler.Base64Decode(*base64_frame);
             std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
             cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
 
-            // Process the frame with colorTracker
-            result = colorTracker(frame);
+            // Process the frame with ColorTracker
+            result = ColorTracker(frame);
         }
     });
 
@@ -74,61 +74,57 @@ int main(int argc, char *argv[]) {
 
     // Set up the WebSocket server
     tcp::endpoint endpoint(tcp::v4(), 8080);
-    WebSocketServer wsServer(ioc, endpoint, dataReceiver, enableColorTracking);
+    WebSocketServer wsServer(ioc, endpoint, data_receiver, enable_color_tracking);
 
-    std::thread videoThread([&]() {
+    std::thread video_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
         while (true) {
-            frameQueueForVideoThread.wait_and_pop(base64_frame);
+            frame_queue_for_video_thread.WaitAndPop(base64_frame);
             if (!base64_frame->empty()) {
-                wsServer.broadcastVideoFrame(*base64_frame);
+                wsServer.BroadcastVideoFrame(*base64_frame);
             }
         }
     });
 
     // Run the io_context in a separate thread
-    std::thread wsThread([&ioc](){ ioc.run(); });
+    std::thread websocket_thread([&ioc](){ ioc.run(); });
 
     // Main loop now only handles window events
-    bool runLoop = true;
-    while (runLoop) {
+    bool run_loop = true;
+    while (run_loop) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
-                runLoop = false;
+                run_loop = false;
             }
         }
 
+        data_receiver.UpdateData(); // Update data from server
+        double battery_percentage = data_receiver.GetBatteryPercentage();
+        double distance_mm = data_receiver.GetDistanceMm();
+        double speed_y = data_receiver.GetSpeedY();
 
-        //TODO: add mutex for this data. Should not matter much, but also consider LARS
-        dataReceiver.updateData(); // Update data from server
-        double battery_percentage = dataReceiver.getBatteryPercentage();
-        double distance_mm = dataReceiver.getDistanceMm();
-        double speed_y = dataReceiver.getSpeedY();
+        const Uint8 *keyboard_state = SDL_GetKeyboardState(nullptr);
 
-        const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
-        //TODO: remove this when webpage is working. this is better than waiting for user input through terminal
-        /*if (keyboardState[SDL_SCANCODE_Z]){enableColorTracking = true;}
-        if (keyboardState[SDL_SCANCODE_X]){enableColorTracking = false;}*/
         //Steering the RVR
-        if (enableColorTracking) {
+        if (enable_color_tracking) {
 
             float diff = result.first;
-            bool isValid = result.second;
+            bool is_valid = result.second;
             std::cout << "diff: " << diff << std::endl;
-            TankSteering tempsteer = followMe(diff, distance_mm, isValid);
+            TankSteering temp_steer = FollowMe(diff, distance_mm, is_valid);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
-                steer = tempsteer;
+                steer = temp_steer;
             }
-            std::cout << "leftBelt: " << steer.leftBelt << " rightBelt: " << steer.rightBelt << std::endl;
+            std::cout << "left_belt: " << steer.left_belt_ << " right_belt: " << steer.right_belt_ << std::endl;
         }
 
         else {
-            TankSteering tempsteer = getTankSteering(keyboardState, joystick, distance_mm);
+            TankSteering temp_steer = GetTankSteering(keyboard_state, joystick, distance_mm);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
-                steer = tempsteer;
+                steer = temp_steer;
             }
 
         }
@@ -146,20 +142,20 @@ int main(int argc, char *argv[]) {
     SDL_Quit();
 
     //Joining threads before closing program
-    if (producerThread.joinable()) {
-        producerThread.join();
+    if (producer_thread.joinable()) {
+        producer_thread.join();
     }
-    if (machinevision_thread.joinable()) {
-        machinevision_thread.join();
+    if (machine_vision_thread.joinable()) {
+        machine_vision_thread.join();
     }
     if (steering_thread.joinable()) {
         steering_thread.join();
     }
-    if (videoThread.joinable()) {
-        videoThread.join();
+    if (video_thread.joinable()) {
+        video_thread.join();
     }
-    if (wsThread.joinable()) {
-        wsThread.join();
+    if (websocket_thread.joinable()) {
+        websocket_thread.join();
     }
     return 0;
 }
