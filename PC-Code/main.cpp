@@ -114,12 +114,15 @@ int main(int argc, char *argv[]) {
 
             float diff = result.first;
             bool is_valid = result.second;
+            TankSteering temp_steer;
+
             std::cout << "diff: " << diff << std::endl;
-            TankSteering temp_steer = FollowMe(diff, distance_mm, is_valid, max_speed);
+            temp_steer = FollowMe(diff, distance_mm, is_valid, max_speed);
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = temp_steer;
             }
+
             std::cout << "left_belt: " << steer.left_belt_ << " right_belt: " << steer.right_belt_ << std::endl;
         }
 
@@ -134,7 +137,6 @@ int main(int argc, char *argv[]) {
         SDL_Delay(10);
 
     }
-
 
     // Cleanup
     if (joystick) {
