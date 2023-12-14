@@ -174,6 +174,9 @@ def data_broadcast_thread():
                                 }
                                 data_str = json.dumps(combined_data) + '\n'
                                 client_socket.sendall(data_str.encode('utf-8'))
+                            except BrokenPipeError:
+                                print("Client disconnected. Stopping data broadcast to this client.")
+                                break
                             except Exception as e:
                                 print(f"Error sending data: {e}")
                                 break
@@ -244,13 +247,13 @@ async def main():
     battery_percentage_task = asyncio.create_task(update_battery_percentage())
 
     # Starting threads for server, video, distance and data broadcast
-    rvr_controller_thread_handle = threading.Thread(target=rvr_controller_thread, daemon=True, name="rvr_controller_thread"
+    rvr_controller_thread_handle = threading.Thread(target=rvr_controller_thread, daemon=True, name="rvr_controller_thread")
     rvr_controller_thread_handle.start()
     video_stream_thread_handle = threading.Thread(target=video_stream_thread, daemon=True, name="video_stream_thread")
     video_stream_thread_handle.start()
     distance_thread_handle = threading.Thread(target=measure_distance, daemon=True, name="distance_thread")
     distance_thread_handle.start()
-    data_thread_handle = threading.Thread(target=data_broadcast_thread, daemon=True, name="data_thread"
+    data_thread_handle = threading.Thread(target=data_broadcast_thread, daemon=True, name="data_thread")
     data_thread_handle.start()
 
     threads_initialized = True
