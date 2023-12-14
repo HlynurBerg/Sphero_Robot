@@ -33,7 +33,7 @@ float AutoStop(int value, int lower_bound, int upper_bound) {
 }
 
 
-TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_joystick * joystick, int distance) {
+TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystick, int distance) {
 
     float left_belt_float = 0.0, right_belt_float = 0.0;
 
