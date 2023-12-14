@@ -70,15 +70,6 @@ std::string UDPHandler::receiveBase64Frame() {
     return std::string(recv_buf.data(), len);
 }
 
-cv::Mat UDPHandler::receiveFrame() {
-    std::lock_guard<std::mutex> lock(socket_mutex_);
-    boost::array<char, 65536> recv_buf;
-    size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint_);
-    std::string encoded_data(recv_buf.begin(), recv_buf.begin() + len);
-    std::string decoded_data = base64_decode(encoded_data);
-    std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
-    return cv::imdecode(buf, cv::IMREAD_COLOR);
-}
 
 std::string UDPHandler::base64_decode(const std::string &in) {
     std::string out;
@@ -96,70 +87,4 @@ std::string UDPHandler::base64_decode(const std::string &in) {
         }
     }
     return out;
-}
-
-// This is now only used for testing purposes because the new thread-safe queue is used instead
-void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
-    try {
-        UDPHandler udpHandler("10.25.46.49", 6001); // Using the new UDPHandler class
-
-        while (true) {
-            cv::Mat local_frame = udpHandler.receiveFrame(); // Receiving local_frame using UDPHandler
-            if (!local_frame.empty()) {
-
-                { // Scoped lock
-                    std::lock_guard<std::mutex> lock(frame_mutex);
-                    frame = local_frame; // Copying the shared data under the lock
-                }
-                //cv::imshow("Video", local_frame);
-            } else {
-                std::cerr << "Received empty local_frame" << std::endl;
-            }
-
-            if (cv::waitKey(10) == 'q') {
-                break;
-            }
-        }
-    }
-    catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-    }
-}
-
-
-
-
-
-// New functions from Robert ? <- Waz is daz?
-//
-std::vector<std::string> splitter(const std::string &s, char delimiter) {
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream tokenStream(s);
-    while (std::getline(tokenStream, token, delimiter)) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
-// Connects to the server
-int connect_to_server(const std::string& host, int port) {
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock == -1) {
-        std::cerr << "Could not create socket" << std::endl;
-        return -1;
-    }
-
-    sockaddr_in server;
-    server.sin_addr.s_addr = inet_addr(host.c_str());
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-
-    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        perror("Connect failed. Error");
-        return -1;
-    }
-
-    std::cout << "Connected to server." << std::endl;
-    return sock;
 }

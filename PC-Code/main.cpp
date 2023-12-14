@@ -1,12 +1,12 @@
+#include "communications/client.hpp"
+#include "communications/thread_safe_queue.hpp"
+#include "communications/websocket.hpp"
+#include "control/motorcontroller.hpp"
+#include "sensors/sensor_processing.hpp"
 #include <SDL.h>
 #include <iostream>
-#include <thread>
 #include <string>
-#include "communications/client.hpp"
-#include "sensors/sensordata.hpp"
-#include "control/motorcontroller.hpp"
-#include "communications/websocket.hpp"
-#include "communications/thread_safe_queue.hpp"
+#include <thread>
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -104,12 +104,6 @@ int main(int argc, char *argv[]) {
         double distance_mm = dataReceiver.getDistanceMm();
         double speed_y = dataReceiver.getSpeedY();
 
-        //std::cout << "Battery: " << battery_percentage
-        //          << "%, Distance: " << distance_mm
-        //          << "mm, Speed Y: " << speed_y << " m/s" << std::endl;
-        battery_percentage;
-        distance_mm;
-        speed_y;
         const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
         //TODO: remove this when webpage is working. this is better than waiting for user input through terminal
         if (keyboardState[SDL_SCANCODE_Z]){enableColorTracking = true;}

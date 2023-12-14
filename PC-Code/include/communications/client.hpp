@@ -24,7 +24,6 @@ public:
     UDPHandler(const std::string& host, int port);
     void sendMessage(const std::string& message);
 
-    cv::Mat receiveFrame();
     std::string receiveBase64Frame();
     std::string base64_decode(const std::string &in);
 
@@ -35,7 +34,5 @@ private:
 
     boost::asio::ip::udp::endpoint remote_endpoint_;
 };
-
-void handle_video(cv::Mat& frame, std::mutex& frame_mutex);
 
 #endif//SPHERO_ROBOT_CLIENT_HPP

@@ -2,6 +2,7 @@
 #define SPHERO_ROBOT_THREAD_SAFE_QUEUE_HPP
 
 //reference: https://stackoverflow.com/questions/15278343/c11-thread-safe-queue
+// https://www.codeproject.com/Articles/5281878/Producer-Consumer-Queues-in-Cplusplus
 
 #include <queue>
 #include <mutex>
@@ -20,7 +21,7 @@ public:
         queue.push(std::move(value));
         cond_var.notify_one();
     }
-    //Remove this function if not needed later
+    //Remove this function if not needed later - robert sjekker
     bool try_pop(T& value) {
         std::lock_guard<std::mutex> lock(mutex);
         if (queue.empty()) {

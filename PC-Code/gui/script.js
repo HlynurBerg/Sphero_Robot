@@ -40,6 +40,12 @@ function updateSpeed(speed) {
     speedDisplay.textContent = speed.toFixed(1) + ' m/s';
 }
 
+//Function to toggle between color tracking and manual control
+document.getElementById('colorTrackingToggle').addEventListener('click', function() {
+    const message = { type: 'toggleColorTracking' };
+    ws.send(JSON.stringify(message));
+});
+
 // Handle incoming WebSocket messages
 ws.onmessage = function(event) {
     console.log("Received data:", event.data);

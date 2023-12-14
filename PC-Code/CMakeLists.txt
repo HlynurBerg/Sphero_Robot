@@ -13,20 +13,19 @@ set(HEADERS
         include/communications/websocket.hpp
         include/control/motorcontroller.hpp
         include/sensors/colortracker.hpp
-        include/sensors/sensordata.hpp
+        include/sensors/sensor_processing.hpp
         include/communications/client.hpp
         include/communications/websocket.hpp
         include/control/motorcontroller.hpp
         include/sensors/colortracker.hpp
-        include/sensors/sensordata.hpp
+        include/sensors/sensor_processing.hpp
         include/communications/tcp_client.hpp
         )
 
 add_executable(main main.cpp
         src/control/motorcontroller.cpp
-        src/communications/tcp_client.cpp
-        src/communications/html5.cpp
-        src/sensors/sensorreader.cpp
+        src/communications/client.cpp
+        src/sensors/sensor_processing.cpp
 )
 
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")

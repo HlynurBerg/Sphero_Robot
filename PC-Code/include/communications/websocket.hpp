@@ -8,7 +8,7 @@
 #include <mutex>
 #include <chrono>
 
-#include "sensors/sensordata.hpp"
+#include "sensors/sensor_processing.hpp"
 
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
@@ -38,6 +38,7 @@ public:
                 [self = shared_from_this()](beast::error_code ec) {
                     if (!ec) {
                         self->send_data();
+                        //self->handleWebSocketMessage();
                         self->start_periodic_send(); // Reschedule
                     }
                 });
@@ -105,6 +106,15 @@ private:
             std::cout << "Sending data: " << ss.str() << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Error sending data: " << e.what() << std::endl;
+        }
+    }
+
+    // Function to handle WebSocket messages
+    void handleWebSocketMessage(const std::string& message) {
+        if (message == "toggleColorTracking") {
+            // Toggle color tracking state
+            // Note: You need to decide how to access or modify the color tracking state from here
+            // This might involve accessing a shared state or sending a signal to the main application logic
         }
     }
 

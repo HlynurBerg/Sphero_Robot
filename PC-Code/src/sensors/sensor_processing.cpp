@@ -1,4 +1,4 @@
-#include <sensors/sensordata.hpp>
+#include <sensors/sensor_processing.hpp>
 
 std::pair<float, bool> colorTracker(cv::Mat image) {
     try {
@@ -13,7 +13,7 @@ std::pair<float, bool> colorTracker(cv::Mat image) {
         std::vector<std::vector<cv::Point>> contours;
 
         if (image.empty()) {
-            std::cerr << "Could not decode frame!" << std::endl;
+            //std::cerr << "Could not decode frame!" << std::endl;
         }
 
         // Color and contour detection
@@ -58,7 +58,6 @@ std::pair<float, bool> colorTracker(cv::Mat image) {
 
 
     catch (std::exception &e) {
-        std::cout << "test" << std::endl;
         std::cerr << e.what() << std::endl;
         return std::make_pair(0.0f, false);
     }
