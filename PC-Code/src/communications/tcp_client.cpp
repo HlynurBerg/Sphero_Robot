@@ -58,17 +58,20 @@ UDPHandler::UDPHandler()
 }
 
 void UDPHandler::sendMessage(const std::string& message) {
+    std::lock_guard<std::mutex> lock(socket_mutex_);
     socket_.send_to(boost::asio::buffer(message), remote_endpoint_);
 }
 
 // For HTML/WS streaming (returns base64 encoded string)
 std::string UDPHandler::receiveBase64Frame() {
+    std::lock_guard<std::mutex> lock(socket_mutex_);
     boost::array<char, 65536> recv_buf;
     size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint_);
     return std::string(recv_buf.data(), len);
 }
 
 cv::Mat UDPHandler::receiveFrame() {
+    std::lock_guard<std::mutex> lock(socket_mutex_);
     boost::array<char, 65536> recv_buf;
     size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint_);
     std::string encoded_data(recv_buf.begin(), recv_buf.begin() + len);
@@ -95,6 +98,7 @@ std::string UDPHandler::base64_decode(const std::string &in) {
     return out;
 }
 
+// This is now only used for testing purposes because the new thread-safe queue is used instead
 void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
     try {
         UDPHandler udpHandler; // Using the new UDPHandler class
@@ -121,6 +125,10 @@ void handle_video(cv::Mat& frame, std::mutex& frame_mutex){
         std::cerr << e.what() << std::endl;
     }
 }
+
+
+
+
 
 // New functions from Robert ? <- Waz is daz?
 //

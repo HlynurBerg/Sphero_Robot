@@ -12,6 +12,7 @@
 #include <cmath>
 #include <control/motorcontroller.hpp>
 #include <mutex>
+#include <communications/thread_safe_queue.hpp>
 // get a reference to the TankSteering struct and pass it to the function
 
 
@@ -22,14 +23,16 @@ class UDPHandler {
 public:
     UDPHandler();
     void sendMessage(const std::string& message);
+
     cv::Mat receiveFrame();
     std::string receiveBase64Frame();
-
-private:
     std::string base64_decode(const std::string &in);
 
+private:
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::socket socket_;
+    std::mutex socket_mutex_;  // Mutex to protect socket access
+
     boost::asio::ip::udp::endpoint remote_endpoint_;
 };
 

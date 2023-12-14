@@ -6,6 +6,7 @@
 #include "sensors/sensordata.hpp"
 #include "control/motorcontroller.hpp"
 #include "communications/websocket.hpp"
+#include "communications/thread_safe_queue.hpp"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
@@ -25,7 +26,14 @@ int main(int argc, char *argv[]) {
         joystick = SDL_JoystickOpen(0); // Open the first available joystick
     }
 
+    DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
+
+    ThreadSafeQueue<std::string> frameQueue;
+    // Create an instance of the UDPHandler for video frame reception
+    UDPHandler udpHandler;
+
     // Creating threads
+
     TankSteering steer;
     std::mutex steer_mutex;
 
@@ -33,43 +41,42 @@ int main(int argc, char *argv[]) {
         handle_controlling(std::ref(steer), std::ref(steer_mutex));
     });
 
-    cv::Mat frame;
-    std::mutex frame_mutex;
-
-    std::thread video_thread([&]() {
-        handle_video(std::ref(frame), std::ref(frame_mutex));
-    });
-
-    cv::Mat localframe;
-    std::pair<float, bool> result;
-
-        std::thread machinevision_thread([&]() {
-        while (true) {
-            {
-                std::lock_guard<std::mutex> lock(frame_mutex);
-                localframe = std::ref(frame);
-            }
-            result = colorTracker(localframe);
-        }
-    });
-    bool enableColorTracking = false;
-
-    DataReceiver dataReceiver("10.25.46.49", 6003); // Replace with actual IP and port of RPI //TODO: This is just for testing, correct it later
-
-    // WS code starts here - For testing purposes only
-    // Create an instance of io_context
-    net::io_context ioc;
-    // Create an instance of the UDPHandler for video frame reception
-    UDPHandler udpHandler;
-
-    // Set up the WebSocket server
-    tcp::endpoint endpoint(tcp::v4(), 8080); // Choose an appropriate port
-    WebSocketServer wsServer(ioc, endpoint, dataReceiver);
-
-    // Start a thread to handle video streaming
-    std::thread videoThread([&]() {
+    // producerThread receives undecoded base64 video frames and pushes them to the frameQueue
+    std::thread producerThread([&]() {
         while (true) {
             std::string base64_frame = udpHandler.receiveBase64Frame();
+            frameQueue.push(std::move(base64_frame));
+        }
+    });
+
+    std::pair<float, bool> result;
+
+    std::thread machinevision_thread([&]() {
+        std::string base64_frame;
+        while (true) {
+            frameQueue.wait_and_pop(base64_frame);
+            std::string decoded_data = udpHandler.base64_decode(base64_frame);
+            std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
+            cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
+
+            // Process the frame with colorTracker
+            result = colorTracker(frame);
+        }
+    });
+
+    bool enableColorTracking = false;
+
+    // Create an instance of io_context
+    net::io_context ioc;
+
+    // Set up the WebSocket server
+    tcp::endpoint endpoint(tcp::v4(), 8080);
+    WebSocketServer wsServer(ioc, endpoint, dataReceiver);
+
+    std::thread videoThread([&]() {
+        std::string base64_frame;
+        while (true) {
+            frameQueue.wait_and_pop(base64_frame);
             if (!base64_frame.empty()) {
                 wsServer.broadcastVideoFrame(base64_frame);
             }
@@ -78,7 +85,6 @@ int main(int argc, char *argv[]) {
 
     // Run the io_context in a separate thread
     std::thread wsThread([&ioc](){ ioc.run(); });
-    // WS code ends here
 
     // Main loop now only handles window events
     bool runLoop = true;
@@ -143,14 +149,17 @@ int main(int argc, char *argv[]) {
     SDL_Quit();
 
     //Joining threads before closing program
+    if (producerThread.joinable()) {
+        producerThread.join();
+    }
     if (machinevision_thread.joinable()) {
         machinevision_thread.join();
     }
-    if (video_thread.joinable()) {
-        video_thread.join();
-    }
     if (steering_thread.joinable()) {
         steering_thread.join();
+    }
+    if (videoThread.joinable()) {
+        videoThread.join();
     }
     if (wsThread.joinable()) {
         wsThread.join();
