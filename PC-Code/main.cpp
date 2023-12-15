@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Create hardcoded data receiver and udp handler for easier changing between home and school network
-    DataReceiver data_receiver("10.25.46.49", 6003);
+    TCPHandler data_receiver("10.25.46.49", 6003);
     UDPHandler udp_handler("10.25.46.49", 6001);
 
     // Create thread safe queues for video frames
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     // Creating jthreads as for C++20
     std::jthread steering_thread([&]() {
-        HandleControlling(std::ref(steer), std::ref(steer_mutex));
+        TCPHandler::HandleControlling(std::ref(steer), std::ref(steer_mutex));
     });
 
     // producer_thread receives undecoded base64 video frames and pushes them to the frameQueue
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
             cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
 
             // Could be imported from websocket, but for now hardcoded
-            cv::Scalar lower_bound(10, 150, 50);
+            cv::Scalar lower_bound(10, 150, 50); // yellow, quite saturated
             cv::Scalar upper_bound(25, 255, 255);
             int min_contour_area = 250;
 

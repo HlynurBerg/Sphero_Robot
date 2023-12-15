@@ -1,8 +1,13 @@
 #include <communications/client.hpp>
 #include <control/motorcontroller.hpp>
 
+// Definitions of member functions of TCPHandler
+TCPHandler::TCPHandler(const std::string& host, int port)
+    : io_service_(), socket_(io_service_), endpoint_(boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(host), port)) {
+    Connect();
+}
 
-void HandleControlling(TankSteering& steer, std::mutex& steer_mutex) {
+void TCPHandler::HandleControlling(TankSteering &steer, std::mutex &steer_mutex) {
     // Your TCP client logic here
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("10.25.46.49"), 6000);
@@ -33,6 +38,59 @@ void HandleControlling(TankSteering& steer, std::mutex& steer_mutex) {
             std::cerr << "Error while sending data: " << error.message() << std::endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Control the update rate
+    }
+}
+
+
+void TCPHandler::Connect() {
+    socket_.connect(endpoint_);
+}
+
+void TCPHandler::UpdateData() {
+    boost::system::error_code error;
+    while(socket_.available()) {
+        size_t len = socket_.read_some(boost::asio::buffer(recv_buf_), error);
+        if (error && error != boost::asio::error::eof) {
+            std::cerr << "Receive failed: " << error.message() << std::endl;
+            return;
+        }
+        data_buffer_ += std::string(recv_buf_.data(), len);
+    }
+
+    // Process complete JSON messages
+    while(true) {
+        size_t pos = data_buffer_.find('\n');
+        if (pos != std::string::npos) {
+            std::string json_message = data_buffer_.substr(0, pos);
+            data_buffer_.erase(0, pos + 1);
+            ParseData(json_message);
+        } else {
+            break;
+        }
+    }
+}
+
+double TCPHandler::GetBatteryPercentage() const {
+    return battery_percentage_;
+}
+
+double TCPHandler::GetDistanceMm() const {
+    return distance_mm_;
+}
+
+double TCPHandler::GetSpeedY() const {
+    return speed_y_;
+}
+
+void TCPHandler::ParseData(const std::string& data) {
+    try {
+        auto j = nlohmann::json::parse(data);
+        battery_percentage_ = j["Battery"]["percentage"];
+        distance_mm_ = j["Distance"];
+        speed_y_ = j["Speed"]["Velocity"]["Y"];
+    } catch (const std::exception& e) {
+        std::cerr << "JSON Parsing error: " << e.what() << std::endl;
+        std::cerr << "Received data: " << data << std::endl; // For debugging
     }
 }
 

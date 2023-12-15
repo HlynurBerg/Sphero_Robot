@@ -19,7 +19,7 @@ using tcp = net::ip::tcp;
 class WebSocketSession : public std::enable_shared_from_this<WebSocketSession> {
     websocket::stream<beast::tcp_stream> ws_;
     beast::flat_buffer buffer_;
-    DataReceiver&data_receiver_;
+    TCPHandler &data_receiver_;
 
     net::steady_timer timer_;
     std::mutex write_mutex_; // Mutex for synchronizing write operations
@@ -27,7 +27,7 @@ class WebSocketSession : public std::enable_shared_from_this<WebSocketSession> {
     std::atomic<float>&new_max_speed_;
 
 public:
-    WebSocketSession(tcp::socket&& socket, DataReceiver&data_receiver, std::atomic<bool>&color_tracking_state, std::atomic<float>&new_max_speed)
+    WebSocketSession(tcp::socket&& socket, TCPHandler &data_receiver, std::atomic<bool>&color_tracking_state, std::atomic<float>&new_max_speed)
         : ws_(std::move(socket)), data_receiver_(data_receiver), timer_(ws_.get_executor()), color_tracking_state_(color_tracking_state), new_max_speed_(new_max_speed) {}
 
     void Start() {
@@ -142,13 +142,13 @@ class WebSocketServer {
     net::io_context& ioc_;
     tcp::acceptor acceptor_;
     std::mutex mutex_;
-    DataReceiver&data_receiver_;
+    TCPHandler &data_receiver_;
     std::vector<std::shared_ptr<WebSocketSession>> sessions_; // Keep track of active sessions
     std::atomic<bool>&color_tracking_state_;
     std::atomic<float>&new_max_speed_;
 
 public:
-    WebSocketServer(net::io_context &ioc, const tcp::endpoint &endpoint, DataReceiver &dataReceiver, std::atomic<bool> &colorTrackingState, std::atomic<float> &maxSpeed)
+    WebSocketServer(net::io_context &ioc, const tcp::endpoint &endpoint, TCPHandler &dataReceiver, std::atomic<bool> &colorTrackingState, std::atomic<float> &maxSpeed)
         : ioc_(ioc), acceptor_(ioc, endpoint), data_receiver_(dataReceiver), color_tracking_state_(colorTrackingState), new_max_speed_(maxSpeed) {
         DoAccept();
     }
