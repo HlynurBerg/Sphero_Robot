@@ -1,5 +1,13 @@
 #include <control/motorcontroller.hpp>
 
+float AutoStop(int value, int lower_bound, int upper_bound) {
+    if (value < lower_bound) return 0.0;
+    if (value > upper_bound) return 1.0;
+    // Linear interpolation
+    float stop = (value - lower_bound) / (upper_bound - lower_bound);
+    return stop;
+}
+
 TankSteering NormalizeBelts(float left_belt_float, float right_belt_float, float max_speed, float input_strength, float turn_speed) {
     //Make both belts have a value of between -1 and 1
     if ((fabs(left_belt_float) > fabs(right_belt_float)) and (round(left_belt_float) != 0)) {
@@ -23,15 +31,6 @@ TankSteering NormalizeBelts(float left_belt_float, float right_belt_float, float
     }
     return normalized;
 }
-
-float AutoStop(int value, int lower_bound, int upper_bound) {
-    if (value < lower_bound) return 0.0;
-    if (value > upper_bound) return 1.0;
-    // Linear interpolation
-    float stop = (value - lower_bound) / (upper_bound - lower_bound);
-    return stop;
-}
-
 
 TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystick, int distance, float max_speed) {
 

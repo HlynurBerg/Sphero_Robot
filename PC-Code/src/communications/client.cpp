@@ -23,7 +23,7 @@ void TCPHandler::HandleControlling(TankSteering &steer, std::mutex &steer_mutex)
 
     TankSteering local_copy;
     while (true) { // Loop to continuously send data
-
+        //TODO: Threadsafe queue
         { // Scoped lock
             std::lock_guard<std::mutex> lock(steer_mutex);
             local_copy = steer; // Copying the shared data under the lock

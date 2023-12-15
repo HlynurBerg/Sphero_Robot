@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
 
             std::cout << "diff: " << diff << std::endl;
             temp_steer = FollowMe(diff, distance_mm, is_valid, max_speed);
+            //TODO: Threadsafe queue!
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = temp_steer;
@@ -134,6 +135,7 @@ int main(int argc, char *argv[]) {
 
         else {
             TankSteering temp_steer = GetTankSteering(keyboard_state, joystick, distance_mm, max_speed);
+            //TODO: Threadsafe queue!
             {
                 std::lock_guard<std::mutex> lock(steer_mutex);
                 steer = temp_steer;
