@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
     ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_machine_vision;
     ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_video_thread;
 
+    //TODO: Create thread safe queues for the steering data
+
     // Create atomic variables for controlling the robot
     std::atomic<bool> enable_color_tracking(false);
     std::atomic<float> max_speed(0.3f);
