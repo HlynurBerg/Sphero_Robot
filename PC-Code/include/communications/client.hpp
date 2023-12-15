@@ -20,7 +20,7 @@ public:
     void Handshake(const std::string& message);
 
     std::string ReceiveBase64Frame();
-    std::string Base64Decode(const std::string &in);
+    std::string Base64Decode(const std::string &encoded_string);
 
 private:
     boost::asio::io_service io_service_;

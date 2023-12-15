@@ -51,26 +51,37 @@ void UDPHandler::Handshake(const std::string& message) {
 // For HTML/WS streaming (returns base64 encoded string)
 std::string UDPHandler::ReceiveBase64Frame() {
     std::lock_guard<std::mutex> lock(socket_mutex_);
-    boost::array<char, 65536> recv_buf; //TODO: this does not need to be abbreviated.
-    size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint_);
-    return std::string(recv_buf.data(), len);
+    boost::array<char, 65536> receive_buffer{};
+    size_t receive_length = socket_.receive_from(boost::asio::buffer(receive_buffer), remote_endpoint_);
+    return {receive_buffer.data(), receive_length};
 }
 
-//TODO: rename variables. they are horrible!
-std::string UDPHandler::Base64Decode(const std::string &in) {
-    std::string out;
-    std::vector<int> T(256, -1);
-    for (int i = 0; i < 64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
+//TODO: if time: use boost base64 decoding instead of this custom implementation
+std::string UDPHandler::Base64Decode(const std::string& encoded_string) {
+    std::string decoded_string;
+    std::vector<int> base64_index_map(256, -1);
+    const std::string kBase64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    int val = 0, valb = -8;
-    for (uchar c: in) {
-        if (T[c] == -1) break;
-        val = (val << 6) + T[c];
-        valb += 6;
-        if (valb >= 0) {
-            out.push_back(char((val >> valb) & 0xFF));
-            valb -= 8;
+    // Initialize the index map for Base64 characters
+    for (int i = 0; i < 64; ++i) {
+        base64_index_map[kBase64Chars[i]] = i;
+    }
+
+    int accumulator = 0;  // Accumulates the bit stream
+    int bit_count = -8;   // Counts the number of bits in 'accumulator'
+    for (unsigned char current_char : encoded_string) {
+        if (base64_index_map[current_char] == -1) break;  // Stop decoding on invalid character
+
+        // Accumulate bits from the Base64 character
+        accumulator = (accumulator << 6) + base64_index_map[current_char];
+        bit_count += 6;
+
+        // If there are enough bits, extract a byte
+        if (bit_count >= 0) {
+            decoded_string.push_back(static_cast<char>((accumulator >> bit_count) & 0xFF));
+            bit_count -= 8;
         }
     }
-    return out;
+    return decoded_string;
 }
+
