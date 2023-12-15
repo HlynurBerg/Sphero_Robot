@@ -67,8 +67,13 @@ int main(int argc, char *argv[]) {
             std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
             cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
 
+            // Could be imported from websocket, but for now hardcoded
+            cv::Scalar lower_bound(10, 150, 50);
+            cv::Scalar upper_bound(25, 255, 255);
+            int min_contour_area = 250;
+
             // Process the frame with ColorTracker
-            result = ColorTracker(frame);
+            result = ColorTracker(frame, lower_bound, upper_bound, min_contour_area);
         }
     });
 

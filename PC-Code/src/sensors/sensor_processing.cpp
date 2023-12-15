@@ -1,12 +1,9 @@
 #include <sensors/sensor_processing.hpp>
 
-std::pair<float, bool> ColorTracker(cv::Mat image) {
+std::pair<float, bool> ColorTracker(cv::Mat image, cv::Scalar lower_bound, cv::Scalar upper_bound, int min_contour_area) {
     try {
-        //TODO: Define color bounds as a variable, let used decide
-        cv::Scalar lower_bound(10, 150, 50);
-        cv::Scalar upper_bound(25, 255, 255);
-        // Define smallest detected object
-        int min_contour_area = 250;
+
+
         bool is_valid = false;
         float difference = 0.0f;
         cv::Mat hsv, mask, segmented;
