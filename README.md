@@ -4,25 +4,26 @@
 The Sphero Robot Project is designed to enable real-time interaction and control over a Sphero robot via a networked interface.
 The system utilizes a combination of PC-based control software and Raspberry Pi-based server scripts to manage communications, sensor data processing, and motor control.
 
-## system requirements 
+## System Requirements 
 - PC with SDL (Simple DirectMedia Layer) library and vcpkg.
 - Raspberry Pi with Python 3 and necessary libraries (cv2, imutils, numpy, etc.).
 
 ## Installation
-- clone the repository 
+- Clone the repository 
 - Install required dependencies (listed in vcpkg.json and Python script requirements).
 
 ## Usage
 - Run main.cpp on the PC to start the control interface.
-- x and z keybindings for either manual or autonomous steering
-- Execute server.py in putty to initiate server functionalities and video streaming.
+- ~~x and z keybindings for either manual or autonomous steering~~
+- Change between manual and autonomous steering through the GUI/HTML interface
+- Execute server.py locally on the Rpi connected to the RVR to initiate server functionalities and video streaming.
 
 ## Features
 - Real-time Control: Control the Sphero robot in real-time using keyboard or joystick control.
-- Video Streaming: Stream video data from Raspberry Pi to the PC interface.
+- Video Streaming: Stream video data from Raspberry Pi to the GUI interface.
 - Sensor Data Processing: Process and respond to sensor data from the Sphero robot.
-- automatic brake function utilizing range data from a sensor
-- Colortracking algorithm using the camera to follow a color
+- Automatic brake function utilizing range data from a sensor
+- Color tracking algorithm using the camera to follow a specified color
 
 ## Code structure and summary 
 
@@ -41,5 +42,16 @@ The system utilizes a combination of PC-based control software and Raspberry Pi-
 - sensordata.hpp: Contains the definitions and structures for sensor data processing.
 - sensorreader.cpp: Implements functions for processing sensor data, such as color tracking in images.
 
-### summary 
+### Video module
+- thread_safe_queue.hpp: Defines a thread-safe queue for storing the undecoded base64 video frames received from the server.
+
+### GUI module
+- index.html: Contains the HTML code for the GUI interface.
+- style.css: Contains the CSS code for the GUI interface.
+- script.js: Contains the JavaScript code for the GUI interface.
+
+### Server module
+- server.py: Implements the server logic for handling network communications and sensor data processing (TCP for data and UDP for video).
+
+### Summary 
 Each module (communications, control, sensors) plays a specific role in the overall functionality of the Sphero Robot project. The communications module handles network interactions, the control module manages motor movements and user inputs, and the sensors module processes sensor data for navigation and interaction purposes.
