@@ -110,6 +110,7 @@ TEST_CASE("UDPHandler Connection Test", "[UDPHandler]") {
 
 }
 
-
+//#TODO for the TCPHandler add data sending, receiving and error handling tests
+//#TODO add a handshake test and a error handling test for the UDPHandler
 
 
