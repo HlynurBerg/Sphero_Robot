@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
     std::thread producer_thread([&]() {
         while (true) {
             auto frame = std::make_shared<std::string>(udp_handler.ReceiveBase64Frame());
-            frame_queue_for_machine_vision.push(frame);
-            frame_queue_for_video_thread.push(frame);
+            frame_queue_for_machine_vision.PushFrame(frame);
+            frame_queue_for_video_thread.PushFrame(frame);
         }
     });
 
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     std::thread machine_vision_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
         while (true) {
-            frame_queue_for_machine_vision.WaitAndPop(base64_frame);
+            frame_queue_for_machine_vision.WaitAndPopFrame(base64_frame);
             std::string decoded_data = udp_handler.Base64Decode(*base64_frame);
             std::vector<uchar> buf(decoded_data.begin(), decoded_data.end());
             cv::Mat frame = cv::imdecode(buf, cv::IMREAD_COLOR);
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     std::thread video_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
         while (true) {
-            frame_queue_for_video_thread.WaitAndPop(base64_frame);
+            frame_queue_for_video_thread.WaitAndPopFrame(base64_frame);
             if (!base64_frame->empty()) {
                 wsServer.BroadcastVideoFrame(*base64_frame);
             }

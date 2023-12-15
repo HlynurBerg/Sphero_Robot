@@ -16,29 +16,20 @@ private:
     std::condition_variable cond_var_;
 
 public:
-    void push(T value) { //TODO: capitalize this without breaking everything!
+    void PushFrame(T value) {
         std::lock_guard<std::mutex> lock(mutex_);
         queue_.push(std::move(value));
         cond_var_.notify_one();
     }
-    //Remove this function if not needed later - robert sjekker
-    bool TryPop(T& value) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (queue_.empty()) {
-            return false;
-        }
-        value = std::move(queue_.front());
-        queue_.pop();
-        return true;
-    }
 
-    void WaitAndPop(T& value) {
+    void WaitAndPopFrame(T& value) {
         std::unique_lock<std::mutex> lock(mutex_);
         cond_var_.wait(lock, [this]{ return !queue_.empty(); });
         value = std::move(queue_.front());
         queue_.pop();
     }
 
+    //TODO: Maybe utilize TryPop for non-blocking pop if time?
 };
 
 #endif//SPHERO_ROBOT_THREAD_SAFE_QUEUE_HPP
