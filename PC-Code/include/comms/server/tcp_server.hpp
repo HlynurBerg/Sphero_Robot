@@ -1,8 +1,0 @@
-//
-// Created by jorge on 10/16/2023.
-//
-
-#ifndef SPHERO_ROBOT_TCP_SERVER_HPP
-#define SPHERO_ROBOT_TCP_SERVER_HPP
-
-#endif//SPHERO_ROBOT_TCP_SERVER_HPP

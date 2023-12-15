@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sphero RVR</title>
+    <link rel="stylesheet" href="style.css"> <!-- external CSS file -->
+</head>
+<body>
+    <div class="header">
+        <h1>Sphero RVR</h1>
+    </div>
+    <div class="video-battery-container">
+        <img id="videoFrame" src="" alt="Video Stream">
+        <div id="batteryBar">
+            <div id="batteryLevel">-</div>
+        </div>
+    </div>
+    <div class="data">
+        <p>Distance to front object <br> <span id="distance">-</span> mm</p>
+    </div>
+    <div class="speedometer">
+        <div class="needle" id="needle"></div>
+        <div class="speed" id="speedDisplay">0 m/s</div>
+    </div>
+    <div class="buttons">
+        <button id="colorTrackingToggle">Toggle colortracking</button>
+        <div class="slider-container">
+            <label for="speedSlider">Max Speed: </label>
+            <input type="range" id="speedSlider" min="0.1" max="1" step="0.05" value="0.3">
+            <span id="speedValue">0.3</span>
+        </div>
+    </div>
+    <!-- TODO: add new class for the new steering controller -->
+    <!-- TODO: add a new class for adjusting the base color for the colortracking -->
+    <script src="script.js"></script> <!-- external JavaScript file -->
+</body>
+</html>

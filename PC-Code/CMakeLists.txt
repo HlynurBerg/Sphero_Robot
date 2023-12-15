@@ -1,34 +1,29 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
-add_executable(main main.cpp)
-target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
 
 
-OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
+OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" OFF)
 
 IF (MSVC)
         add_compile_definitions("_WIN32_WINNT=0x0601")
+        add_compile_options(/bigobj)
 ENDIF()
 
 set(HEADERS
-        include/comms/communicationhandler.hpp
-        include/controllers/motorcontroller.hpp
-        include/sensors/sensorreader.hpp
-        include/comms/client/clients.hpp
-        )
-
-add_executable(Sphero_Robot
-        main.cpp
-        src/controllers/motorcontroller.cpp
-        src/sensors/sensorreader.cpp
-        include/sensors/sensorreader.hpp
-        tests/test_communicationhandler.cpp
-        tests/test_motorcontroller.cpp
-        tests/test_sensorreader.cpp
-        include/comms/server/socket_handler.hpp
-        include/comms/server/tcp_server.hpp
-        include/comms/client/clients.hpp
-        tests/test_tcp_client.cpp
+        include/communications/client.hpp
+        include/communications/mock_server.hpp
+        include/communications/thread_safe_queue.hpp
+        include/communications/websocket.hpp
+        include/control/motorcontroller.hpp
+        include/sensors/sensor_processing.hpp
 )
+add_executable(main main.cpp
+        src/control/motorcontroller.cpp
+        src/communications/client.cpp
+        src/sensors/sensor_processing.cpp
+)
+
+target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/PC-Code/include")
+
 
 
 find_package(Boost REQUIRED COMPONENTS system)
