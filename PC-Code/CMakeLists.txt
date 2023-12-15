@@ -1,7 +1,7 @@
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 
 
-OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" ON)
+OPTION(NETWORKING_BUILD_TESTS "Build the unit tests" OFF)
 
 IF (MSVC)
         add_compile_definitions("_WIN32_WINNT=0x0601")

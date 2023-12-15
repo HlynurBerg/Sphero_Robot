@@ -41,7 +41,6 @@ void TCPHandler::HandleControlling(TankSteering &steer, std::mutex &steer_mutex)
     }
 }
 
-
 void TCPHandler::Connect() {
     socket_.connect(endpoint_);
 }
@@ -94,7 +93,6 @@ void TCPHandler::ParseData(const std::string& data) {
     }
 }
 
-
 UDPHandler::UDPHandler(const std::string& host, int port)
     : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string(host), port) {
     socket_.open(boost::asio::ip::udp::v4());
@@ -106,7 +104,6 @@ void UDPHandler::Handshake(const std::string& message) {
     socket_.send_to(boost::asio::buffer(message), remote_endpoint_);
 }
 
-// For HTML/WS streaming (returns base64 encoded string)
 std::string UDPHandler::ReceiveBase64Frame() {
     std::lock_guard<std::mutex> lock(socket_mutex_);
     boost::array<char, 65536> receive_buffer{};
@@ -142,4 +139,3 @@ std::string UDPHandler::Base64Decode(const std::string& encoded_string) {
     }
     return decoded_string;
 }
-
