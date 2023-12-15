@@ -67,10 +67,10 @@ std::pair<float, bool> ColorTracker(cv::Mat image) {
 // Definitions of member functions of DataReceiver
 DataReceiver::DataReceiver(const std::string& host, int port)
     : io_service_(), socket_(io_service_), endpoint_(boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(host), port)) {
-    connect();
+    Connect();
 }
 
-void DataReceiver::connect() { //TODO: capitalizing this name breaks everything. Maybe change name?
+void DataReceiver::Connect() {
     socket_.connect(endpoint_);
 }
 

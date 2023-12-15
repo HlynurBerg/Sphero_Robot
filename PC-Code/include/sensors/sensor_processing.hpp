@@ -16,7 +16,7 @@ class DataReceiver {
 public:
     DataReceiver(const std::string& host, int port);
 
-    void connect();
+    void Connect();
     void UpdateData();
     double GetBatteryPercentage() const;
     double GetDistanceMm() const;
