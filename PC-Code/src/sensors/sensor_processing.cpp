@@ -59,3 +59,11 @@ std::pair<float, bool> ColorTracker(cv::Mat image, cv::Scalar lower_bound, cv::S
         return std::make_pair(0.0f, false);
     }
 }
+
+float AutoStop(int value, int lower_bound, int upper_bound) {
+    if (value < lower_bound) return 0.0;
+    if (value > upper_bound) return 1.0;
+    // Linear interpolation with floating-point division
+    float stop = static_cast<float>(value - lower_bound) / (upper_bound - lower_bound);
+    return stop;
+}

@@ -1,12 +1,5 @@
 #include <control/motorcontroller.hpp>
 
-float AutoStop(int value, int lower_bound, int upper_bound) {
-    if (value < lower_bound) return 0.0;
-    if (value > upper_bound) return 1.0;
-    // Linear interpolation
-    float stop = (value - lower_bound) / (upper_bound - lower_bound);
-    return stop;
-}
 
 TankSteering NormalizeBelts(float left_belt_float, float right_belt_float, float max_speed, float input_strength, float turn_speed) {
     //Make both belts have a value of between -1 and 1
@@ -36,6 +29,8 @@ TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystic
 
     float left_belt_float = 0.0, right_belt_float = 0.0;
 
+    float stop = AutoStop(distance, 300, 500);
+
     //Checking keypresses
     bool is_up_pressed = keyboard_state[SDL_SCANCODE_W] || keyboard_state[SDL_SCANCODE_UP];
     bool is_down_pressed = keyboard_state[SDL_SCANCODE_S] || keyboard_state[SDL_SCANCODE_DOWN];
@@ -54,8 +49,8 @@ TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystic
 
         // Adding up inputs
         if (is_up_pressed) { // AutoStop slows down the robot when close to objects
-            left_belt_float = (left_belt_float +1)* AutoStop(distance, 100, 500);
-            right_belt_float = (right_belt_float +1)* AutoStop(distance, 100, 500);
+            left_belt_float = (left_belt_float +1)* stop;
+            right_belt_float = (right_belt_float +1)* stop;
         }
         if (is_down_pressed) {
             left_belt_float--;
@@ -75,18 +70,19 @@ TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystic
     else {
         int joystick_x = SDL_JoystickGetAxis(joystick, 0);
         int joystick_y = SDL_JoystickGetAxis(joystick, 1);
+        std::cout << "joystick_x: " << joystick_x << " joystick_y: " << joystick_y << std::endl;
+        if ((abs(joystick_x)/32767.0) < 0.1) { joystick_x = 0; }
+        if ((abs(joystick_y)/32767.0) < 0.1) { joystick_y = 0; }
+
 
         input_strength = sqrt(joystick_x * joystick_x + joystick_y * joystick_y)/32768;
         if (input_strength > 1) {
             input_strength = 1;
         }
 
-        //Deadzone
+        //Dead-zone
         if (input_strength > 0.2) {
-            float stop = 1;
-            if (joystick_y < 0) {
-                stop = AutoStop(distance, 100, 500);
-            }
+            if (joystick_y > 0) {stop = 1;} //allow reversing
             left_belt_float = -joystick_y *stop + steer* joystick_x;
             right_belt_float = -joystick_y *stop - steer* joystick_x;
         }
@@ -100,7 +96,8 @@ TankSteering GetTankSteering(const Uint8* keyboard_state, SDL_Joystick * joystic
 
 TankSteering FollowMe(float difference, int distance, bool is_valid, float max_speed) {
     if (is_valid) {
-        float stop = AutoStop(distance, 100, 200);
+        std::cout << distance << std::endl;
+        float stop = AutoStop(distance, 500, 1000);
         float input_strength = 1;
         float turn_speed = 0.7;
         float left_belt_float = stop + difference;

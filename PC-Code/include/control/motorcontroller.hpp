@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include <cmath> //for absolute value function in NormalizeBelts
+#include "sensors/sensor_processing.hpp"
 
 class TankSteering {
 public:
@@ -10,7 +11,6 @@ public:
     int right_belt_ = 0;
 };
 
-float AutoStop(int value, int lower_bound, int upper_bound);
 TankSteering NormalizeBelts(float left_belt_float, float right_belt_float, float max_speed, float input_strength, float turn_speed);
 TankSteering GetTankSteering(const Uint8 *keyboard_state, SDL_Joystick *joystick, int distance, float max_speed);
 TankSteering FollowMe(float difference, int distance, bool is_valid, float max_speed);
