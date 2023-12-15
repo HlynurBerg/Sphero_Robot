@@ -1,13 +1,11 @@
 #ifndef SPHERO_ROBOT_SENSOR_PROCESSING_HPP
 #define SPHERO_ROBOT_SENSOR_PROCESSING_HPP
 
-//#include <SDL.h> //for User Input. Change when switching to html5 api
-#include <boost/asio.hpp> //for communication
-#include <opencv2/opencv.hpp> //for image processing
+#include <boost/asio.hpp>
+#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
 #include <boost/array.hpp>
-//#include <thread>
 #include <vector>
 #include <cmath>
 #include <nlohmann/json.hpp>

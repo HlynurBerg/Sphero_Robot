@@ -1,10 +1,10 @@
 #ifndef SPHERO_ROBOT_MOTORCONTROLLER_HPP
 #define SPHERO_ROBOT_MOTORCONTROLLER_HPP
 
-#include <SDL.h> //for User Input. Change when switching to html5 api
+#include <SDL.h>
 #include <cmath> //for absolute value function in NormalizeBelts
 
-class TankSteering { //consider changing to a struct. everything is public
+class TankSteering {
 public:
     int left_belt_ = 0;
     int right_belt_ = 0;

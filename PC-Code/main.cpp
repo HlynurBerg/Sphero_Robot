@@ -103,6 +103,7 @@ int main(int argc, char *argv[]) {
         }
 
         data_receiver.UpdateData(); // Update data from server
+
         double battery_percentage = data_receiver.GetBatteryPercentage();
         double distance_mm = data_receiver.GetDistanceMm();
         double speed_y = data_receiver.GetSpeedY();

@@ -29,7 +29,6 @@ public:
         queue_.pop();
     }
 
-    //TODO: Maybe utilize TryPop for non-blocking pop if time?
 };
 
 #endif//SPHERO_ROBOT_THREAD_SAFE_QUEUE_HPP
