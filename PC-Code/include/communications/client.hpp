@@ -1,5 +1,6 @@
 #ifndef SPHERO_ROBOT_CLIENT_HPP
 #define SPHERO_ROBOT_CLIENT_HPP
+
 #include <boost/asio.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>

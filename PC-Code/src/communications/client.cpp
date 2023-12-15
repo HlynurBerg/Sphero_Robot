@@ -114,7 +114,7 @@ std::string UDPHandler::ReceiveBase64Frame() {
     return {receive_buffer.data(), receive_length};
 }
 
-//TODO: if time: use boost base64 decoding instead of this custom implementation
+//TODO: if time: use boost base64 decoding instead of this custom implementation made by AI (ChatGPT)
 std::string UDPHandler::Base64Decode(const std::string& encoded_string) {
     std::string decoded_string;
     std::vector<int> base64_index_map(256, -1);
