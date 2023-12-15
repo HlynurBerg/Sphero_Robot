@@ -6,6 +6,9 @@ TCPHandler::TCPHandler(const std::string& host, int port)
     : io_service_(), socket_(io_service_), endpoint_(boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(host), port)) {
     Connect();
 }
+bool TCPHandler::isConnected() const {
+    return socket_.is_open();
+}
 
 void TCPHandler::HandleControlling(TankSteering &steer, std::mutex &steer_mutex) {
     // Your TCP client logic here
@@ -93,7 +96,6 @@ void TCPHandler::ParseData(const std::string& data) {
         std::cerr << "Received data: " << data << std::endl; // For debugging
     }
 }
-
 
 UDPHandler::UDPHandler(const std::string& host, int port)
     : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string(host), port) {

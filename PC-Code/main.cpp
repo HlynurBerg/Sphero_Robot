@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Create hardcoded data receiver and udp handler for easier changing between home and school network
-    TCPHandler data_receiver("10.25.46.49", 6003);
+    TCPHandler data_receiver("127.0.0.1", 6003);
     UDPHandler udp_handler("127.0.0.1", 6001);
 
     // Create thread safe queues for video frames

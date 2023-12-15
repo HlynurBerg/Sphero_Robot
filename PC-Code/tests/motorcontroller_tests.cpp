@@ -1,7 +1,6 @@
-#include "control/motorcontroller.hpp"  // Include your motor controller header file
+#include "control/motorcontroller.hpp"
 #include <thread>
 #include "catch2/catch_test_macros.hpp"
-#include <fstream>
 #include <iostream>
 
 

@@ -1,6 +1,5 @@
 #ifndef SPHERO_ROBOT_CLIENT_HPP
 #define SPHERO_ROBOT_CLIENT_HPP
-
 #include <boost/asio.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -15,13 +14,24 @@
 class TCPHandler {
 public:
     TCPHandler(const std::string& host, int port);
-
+    void sendMessage(const std::string& message);
     static void HandleControlling(TankSteering& steer, std::mutex& steer_mutex);
     void Connect();
+    bool isConnected() const;
     void UpdateData();
     double GetBatteryPercentage() const;
     double GetDistanceMm() const;
     double GetSpeedY() const;
+    void ParseData(const std::string& data);
+
+    void SendData(const std::string& data) {
+        boost::system::error_code error;
+        socket_.write_some(boost::asio::buffer(data), error);
+
+        if (error) {
+            std::cerr << "Error while sending data: " << error.message() << std::endl;
+        }
+    }
 
 private:
     boost::asio::io_service io_service_;
@@ -33,7 +43,6 @@ private:
     double distance_mm_;
     double speed_y_;
 
-    void ParseData(const std::string& data);
 };
 
 class UDPHandler {

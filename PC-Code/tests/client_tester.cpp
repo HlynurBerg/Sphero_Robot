@@ -1,29 +1,17 @@
-#define CATCH_CONFIG_MAIN
 #include "catch2/catch_test_macros.hpp"
 #include "communications/client.hpp"
 #include "communications/mock_server.hpp"
-#include "sensors/sensor_processing.hpp"
 #include <chrono>
 #include <fstream>
 #include <mutex>
 #include <thread>
 
-
-
-//the definitions of TankSteering and handle_controlling() are accessible
-extern void handle_controlling(TankSteering& steer, std::mutex& steer_mutex);
-extern void handle_video(cv::Mat& frame, std::mutex& frame_mutex);
-
-// Mock data for testing
-const std::string mockTCPData = "Mock TCP Command";
-const cv::Mat mockImage(100, 100, CV_8UC3, cv::Scalar(0, 0, 255));  // A simple red image for testing
-
-
-
-
+// currently not receiving in UDPHandler #TODO: Faultfinding on UDPHandler Base64 Receive Test
 TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
     std::cout << "Starting MockUDPServer on port 6001" << std::endl;
     MockUDPServer mockServer(6001);
+    std::cout << "Connected on port 6001" << std::endl;
+
     UDPHandler udpHandler("127.0.0.1", 6001);
 
     SECTION("Sending Base64 Encoded 'Hello World'") {
@@ -40,78 +28,22 @@ TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
         REQUIRE(udpHandler.Base64Decode(receivedMessage) == "Hello World");
     }
 }
-/*
-void test_tcp_client() {
-    std::cout << "Client is attempting to connect to the server." << std::endl;
-    boost::asio::io_service io_service;
-    boost::asio::ip::tcp::socket socket(io_service);
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 6000);
-    std::cout << "Client has attempted to connect to the server." << std::endl;
-
-    try {
-        socket.connect(endpoint);
-        std::cout << "Connected to server for test." << std::endl;
-
-        // Example data
-        int intValue = 42;
-        float floatValue = 3.14f;
-        std::string message = std::to_string(intValue) + ", " + std::to_string(floatValue);
-
-        // Send data
-        std::cout << "Sending data: " << message << std::endl;
-        boost::asio::write(socket, boost::asio::buffer(message));
-
-        // Buffer for receiving responses
-        char reply[1024];
-
-        // Receive server response
-        size_t reply_length = socket.read_some(boost::asio::buffer(reply, 1024));
-        std::cout << "Server reply: ";
-        std::cout.write(reply, reply_length);
-        std::cout << "\n";
-
-        // Receive sensor data from server
-        std::fill(std::begin(reply), std::end(reply), 0);  // Clear the buffer before the next read
-        size_t sensor_data_length = socket.read_some(boost::asio::buffer(reply, 1024));
-        std::cout << "Client received sensor data: ";
-        std::cout.write(reply, sensor_data_length);
-        std::cout << "\n";
-    } catch (std::exception& e) {
-        std::cerr << "Exception in test_tcp_client: " << e.what() << "\n";
-    }
-}
-
-
-
-TEST_CASE("TCP Communication Test") {
-    std::cout << "TCP Communication Test started" << std::endl;
-
-    MockServer server(6000, 6001);
-    std::thread testThread(test_tcp_client);
-
-    testThread.join();
-}
-*/
-
 
 TEST_CASE("Base64 Decoding Test", "[base64]") {
     std::cout << "Running test" << std::endl;
 
     // Create an instance of UDPHandler
-    // You need to provide the host and port to the constructor
     UDPHandler udpHandler("127.0.0.1", 6001);
 
     std::string encoded = "SGVsbG8sIHdvcmxkIQ=="; // "Hello, world!" in base64
     std::string expectedDecoded = "Hello, world!";
 
-    // Now use the udpHandler instance to call base64_decode
     std::string actualDecoded = udpHandler.Base64Decode(encoded);
 
     std::cout << "Decoded string: " << actualDecoded << std::endl;
 
     REQUIRE(actualDecoded == expectedDecoded);
 }
-
 
 // Function to save a mock image
 void saveMockImage() {
@@ -124,10 +56,10 @@ void saveMockImage() {
 }
 
 TEST_CASE("cv::imdecode PNG Test", "[imdecode]") {
-    // Save the mock image as a PNG file
+    // Save the mock image
     saveMockImage();
 
-    // Read the PNG file into a buffer
+    // Read the file into a buffer
     std::ifstream file("mock_image.png", std::ios::binary);
     if (file.good()) {
         std::cout << "PNG file 'mock_image.png' opened successfully." << std::endl;
@@ -151,98 +83,33 @@ TEST_CASE("cv::imdecode PNG Test", "[imdecode]") {
 
     REQUIRE_FALSE(image.empty());
 }
-/*
-TEST_CASE("UDPHandler Test", "[UDPHandler]") {
-    // Start the mock server
-    short udp_port = 12345; // Example port
-    MockServer mockServer(0, udp_port); // 0 for TCP port as it's not used here
 
-    // Initialize UDPHandler to send data to the mock server
-    UDPHandler udpHandler("127.0.0.1", udp_port);
+TEST_CASE("TCPHandler Connection Test", "[TCPHandler]") {
+    unsigned short test_port = 6003; // Choose an appropriate port number
+    MockTCPServer mockServer(test_port);
 
-    // Create a test image or any data that UDPHandler is supposed to send
-    cv::Mat testImage = cv::Mat::eye(10, 10, CV_8UC3); // Example image
+    std::string host = "127.0.0.1"; // Localhost
+    TCPHandler tcpHandler(host, test_port);
 
-    // Send data through UDPHandler
-    // ...
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    // Verify the data is received by the mock server
-    // This might involve additional implementation in the mock server to track received data
-}
-*/
-/*
-TEST_CASE("DataReceiver sends data correctly", "[DataReceiver]") {
-    MockTCPServer mockTcpServer(6000);
-    mockTcpServer.start();
+    REQUIRE(tcpHandler.isConnected());
 
-    DataReceiver dataReceiver("127.0.0.1", 6000); // Assuming localhost and the port
-
-    SECTION("Sending a test message") {
-        dataReceiver.sendData("Test message");
-        std::string receivedMessage = mockTcpServer.getLastReceivedMessage();
-        REQUIRE(receivedMessage == "Test message");
-    }
-
-    mockTcpServer.stop();
-}
-*/
-
-
-/*
-TEST_CASE("Handshake UDP Test") {
-    // Create an instance of UDPHandler
-    boost::asio::io_service io_service;
-    MockServer mockServer(io_service, 6001);
-
-
-    // Define the expected initial message
-    std::string expectedMessage = "Hello";
-
-    // Set the next message to be received by MockServer
-    mockServer.SetNextMessage(expectedMessage);
-
-    // Perform the handshake
-    udpHandler.Handshake(expectedMessage);
-
-    // Simulate receiving the message using MockServer
-    std::string receivedMessage = mockServer.ReceiveMessage(); // Simulate receiving a message
-
-    // Add print statements to check the values
-    INFO("Expected Message: " << expectedMessage);
-    INFO("Received Message: " << receivedMessage);
-
-    // Check if the received message matches the expected message
-    REQUIRE(receivedMessage == expectedMessage);
-}
-*/
-
-
-
-/*
-TEST_CASE("Handshake Test") {
-    // Create a MockServer instance
-    MockServer mockServer("127.0.0.1", 6001);
-
-    // Define the message to send (Base64 encoded "Hello World")
-    std::string message = "SGVsbG8gV29ybGQ=";
-
-    // Send the message to UDPHandler using MockServer
-    mockServer.SendMessage(message);
-
-    // Now, perform the handshake with UDPHandler
-    UDPHandler udpHandler("127.0.0.1", 6001);
-    std::string receivedMessage = udpHandler.ReceiveBase64Frame();
-
-    // Decode the received message
-    std::string decodedMessage = udpHandler.Base64Decode(receivedMessage);
-
-    // Add print statements to check the values
-    INFO("Expected Message: " << "Hello World");
-    INFO("Received Message: " << decodedMessage);
-
-    // Check if the received message matches the expected message
-    REQUIRE(decodedMessage == "Hello World");
 }
 
-*/
+TEST_CASE("UDPHandler Connection Test", "[UDPHandler]") {
+    unsigned short test_port = 6001; //port number
+    MockUDPServer mockServer(test_port);
+
+    std::string host = "127.0.0.1"; // Localhost
+    UDPHandler udpHandler(host, test_port);
+
+    // Send a test message to see if the server receives it
+    std::string test_message = "Hello";
+    udpHandler.Handshake(test_message);
+
+}
+
+
+
 

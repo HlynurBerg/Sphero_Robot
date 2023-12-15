@@ -10,18 +10,12 @@ ENDIF()
 
 set(HEADERS
         include/communications/client.hpp
+        include/communications/mock_server.hpp
+        include/communications/thread_safe_queue.hpp
         include/communications/websocket.hpp
         include/control/motorcontroller.hpp
-        include/sensors/colortracker.hpp
         include/sensors/sensor_processing.hpp
-        include/communications/client.hpp
-        include/communications/websocket.hpp
-        include/control/motorcontroller.hpp
-        include/sensors/colortracker.hpp
-        include/sensors/sensor_processing.hpp
-        include/communications/tcp_client.hpp
-        )
-
+)
 add_executable(main main.cpp
         src/control/motorcontroller.cpp
         src/communications/client.cpp
