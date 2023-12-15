@@ -10,7 +10,7 @@
 #include <cmath>
 #include <nlohmann/json.hpp>
 
-std::pair<float, bool> ColorTracker(cv::Mat image);
+std::pair<float, bool> ColorTracker(cv::Mat image, cv::Scalar lower_bound, cv::Scalar upper_bound, int min_contour_area);
 
 class DataReceiver {
 public:
