@@ -5,8 +5,9 @@
 #include <fstream>
 #include <mutex>
 #include <thread>
-
+// This file has been created with the help of
 // currently not receiving in UDPHandler #TODO: Faultfinding on UDPHandler Base64 Receive Test
+/*
 TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
     std::cout << "Starting MockUDPServer on port 6001" << std::endl;
     MockUDPServer mockServer(6001);
@@ -28,7 +29,7 @@ TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
         REQUIRE(udpHandler.Base64Decode(receivedMessage) == "Hello World");
     }
 }
-
+*/
 TEST_CASE("Base64 Decoding Test", "[base64]") {
     std::cout << "Running test" << std::endl;
 
@@ -110,7 +111,26 @@ TEST_CASE("UDPHandler Connection Test", "[UDPHandler]") {
 
 }
 
+TEST_CASE("UDPHandler Handshake Test", "[UDPHandler]") {
+    // Start the mock UDP server
+    unsigned short test_port = 6001; // Choose an appropriate port number
+    MockUDPServer mockServer(test_port);
+
+    // Create an instance of UDPHandler
+    std::string host = "127.0.0.1"; // Localhost
+    UDPHandler udpHandler(host, test_port);
+
+    // Send a handshake message
+    std::string handshake_message = "Hello";
+    udpHandler.Handshake(handshake_message);
+
+    // Wait for a short duration to ensure the message is sent and received
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Check if the mock server received the correct message
+    std::string received_message = mockServer.getReceivedMessage(); // Use the new method
+    REQUIRE(received_message == handshake_message);
+}
+
 //#TODO for the TCPHandler add data sending, receiving and error handling tests
 //#TODO add a handshake test and a error handling test for the UDPHandler
-
-

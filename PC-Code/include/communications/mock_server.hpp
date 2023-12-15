@@ -10,40 +10,59 @@
 class MockUDPServer {
 public:
     MockUDPServer(unsigned short port)
-        : io_service_(), socket_(io_service_, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
-        std::cout << "MockUDPServer constructor called" << std::endl;
+        : io_service_(), socket_(io_service_, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)), stop_flag_(false) {
         server_thread_ = std::thread([this] { this->run(); });
     }
 
     ~MockUDPServer() {
-        std::cout << "MockUDPServer destructor called" << std::endl;
-        io_service_.stop();
+        stop();
         if (server_thread_.joinable()) {
             server_thread_.join();
         }
     }
 
-    void sendBase64Message(const std::string& message, const std::string& host, unsigned short port) {
-        try {
-            std::cout << "Sending base64 message to " << host << "127.0.0.1" << port << std::endl;
-            boost::asio::ip::udp::endpoint remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(host), port);
-            socket_.send_to(boost::asio::buffer(message), remote_endpoint);
-            std::cout << "Message sent: " << message << std::endl;
-        } catch (const std::exception& e) {
-            std::cerr << "Error sending message: " << e.what() << std::endl;
-        }
+    std::string getReceivedMessage() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return last_received_message_;
+    }
+
+    void stop() {
+        stop_flag_ = true;
+        socket_.cancel(); // Cancel any ongoing asynchronous operations
+        io_service_.stop();
     }
 
 private:
     void run() {
-        io_service_.run();
-    }
+        while (!stop_flag_) {
+            boost::array<char, 1024> recv_buf;  // Clear the buffer on each iteration
+            boost::asio::ip::udp::endpoint remote_endpoint;
+            boost::system::error_code error;
 
+            size_t len = socket_.receive_from(boost::asio::buffer(recv_buf), remote_endpoint, 0, error);
+
+            if (error) {
+                if (error == boost::asio::error::operation_aborted || error == boost::asio::error::interrupted) {
+                    break; // Socket was closed or operation interrupted, exit the loop
+                } else {
+                    std::cerr << "Error receiving message: " << error.message() << std::endl;
+                    continue; // Handle or log other errors as needed
+                }
+            }
+
+            if (len > 0) {
+                std::lock_guard<std::mutex> lock(mutex_);
+                last_received_message_ = std::string(recv_buf.data(), len); // Use len to construct the string
+            }
+        }
+    }
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::socket socket_;
     std::thread server_thread_;
+    std::string last_received_message_;
+    std::mutex mutex_;
+    bool stop_flag_;
 };
-
 class MockTCPServer {
 public:
     MockTCPServer(unsigned short port)
