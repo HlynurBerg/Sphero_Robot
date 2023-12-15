@@ -5,8 +5,10 @@
 #include <fstream>
 #include <mutex>
 #include <thread>
-// This file has been created with the help of
+
+// This file has been partially implemented and optimized with AI (ChatGPT/COPilot) to reduce the amount of time spent on writing tests.
 // currently not receiving in UDPHandler #TODO: Faultfinding on UDPHandler Base64 Receive Test
+
 /*
 TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
     std::cout << "Starting MockUDPServer on port 6001" << std::endl;
@@ -18,7 +20,7 @@ TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
     SECTION("Sending Base64 Encoded 'Hello World'") {
         std::cout << "Preparing to send base64 encoded message" << std::endl;
         std::string base64Message = "SGVsbG8gV29ybGQ=";  // Base64 for 'Hello World'
-        mockServer.sendBase64Message(base64Message, "127.0.0.1", 6001);
+        mockServer.SendBase64Message(base64Message, "127.0.0.1", 6001);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Give time for the message to be received
         std::cout << "Attempting to receive message in UDPHandler" << std::endl;
@@ -30,6 +32,7 @@ TEST_CASE("UDPHandler Base64 Receive Test", "[UDPHandler]") {
     }
 }
 */
+
 TEST_CASE("Base64 Decoding Test", "[base64]") {
     std::cout << "Running test" << std::endl;
 
@@ -47,7 +50,7 @@ TEST_CASE("Base64 Decoding Test", "[base64]") {
 }
 
 // Function to save a mock image
-void saveMockImage() {
+void SaveMockImage() {
     cv::Mat mockImage(100, 100, CV_8UC3, cv::Scalar(0, 0, 255)); // A simple red image
     if (cv::imwrite("mock_image.png", mockImage)) {
         std::cout << "Mock image successfully saved to 'mock_image.png'" << std::endl;
@@ -58,7 +61,7 @@ void saveMockImage() {
 
 TEST_CASE("cv::imdecode PNG Test", "[imdecode]") {
     // Save the mock image
-    saveMockImage();
+    SaveMockImage();
 
     // Read the file into a buffer
     std::ifstream file("mock_image.png", std::ios::binary);
@@ -86,10 +89,10 @@ TEST_CASE("cv::imdecode PNG Test", "[imdecode]") {
 }
 
 TEST_CASE("TCPHandler Connection Test", "[TCPHandler]") {
-    unsigned short test_port = 6003; // Choose an appropriate port number
+    unsigned short test_port = 6003;
     MockTCPServer mockServer(test_port);
 
-    std::string host = "127.0.0.1"; // Localhost
+    std::string host = "127.0.0.1";
     TCPHandler tcpHandler(host, test_port);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -99,36 +102,30 @@ TEST_CASE("TCPHandler Connection Test", "[TCPHandler]") {
 }
 
 TEST_CASE("UDPHandler Connection Test", "[UDPHandler]") {
-    unsigned short test_port = 6001; //port number
+    unsigned short test_port = 6001;
     MockUDPServer mockServer(test_port);
 
-    std::string host = "127.0.0.1"; // Localhost
+    std::string host = "127.0.0.1";
     UDPHandler udpHandler(host, test_port);
 
-    // Send a test message to see if the server receives it
     std::string test_message = "Hello";
     udpHandler.Handshake(test_message);
 
 }
 
 TEST_CASE("UDPHandler Handshake Test", "[UDPHandler]") {
-    // Start the mock UDP server
-    unsigned short test_port = 6001; // Choose an appropriate port number
+    unsigned short test_port = 6001;
     MockUDPServer mockServer(test_port);
 
-    // Create an instance of UDPHandler
-    std::string host = "127.0.0.1"; // Localhost
+    std::string host = "127.0.0.1";
     UDPHandler udpHandler(host, test_port);
 
-    // Send a handshake message
     std::string handshake_message = "Hello";
     udpHandler.Handshake(handshake_message);
 
-    // Wait for a short duration to ensure the message is sent and received
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    // Check if the mock server received the correct message
-    std::string received_message = mockServer.getReceivedMessage(); // Use the new method
+    std::string received_message = mockServer.getReceivedMessage();
     REQUIRE(received_message == handshake_message);
 }
 

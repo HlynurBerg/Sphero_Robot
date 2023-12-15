@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Create hardcoded data receiver and udp handler for easier changing between home and school network
-    TCPHandler data_receiver("127.0.0.1", 6003);
-    UDPHandler udp_handler("127.0.0.1", 6001);
+    TCPHandler data_receiver("10.25.46.49", 6003);
+    UDPHandler udp_handler("10.25.46.49", 6001);
 
     // Create thread safe queues for video frames
     ThreadSafeQueue<std::shared_ptr<std::string>> frame_queue_for_machine_vision;
@@ -74,15 +74,12 @@ int main(int argc, char *argv[]) {
             cv::Scalar upper_bound(25, 255, 255);
             int min_contour_area = 250;
 
-            // Process the frame with ColorTracker
             result = ColorTracker(frame, lower_bound, upper_bound, min_contour_area);
         }
     });
 
-    // Create an instance of io_context
     net::io_context ioc;
 
-    // Set up the WebSocket server
     tcp::endpoint endpoint(tcp::v4(), 8080);
     WebSocketServer wsServer(ioc, endpoint, data_receiver, enable_color_tracking, max_speed);
 
@@ -96,10 +93,8 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    // Run the io_context in a separate thread
     std::jthread websocket_thread([&ioc](){ ioc.run(); });
 
-    // Main loop now only handles window events
     bool run_loop = true;
     while (run_loop) {
         SDL_Event e;
@@ -109,7 +104,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        data_receiver.UpdateData(); // Update data from server
+        data_receiver.UpdateData();
 
         double battery_percentage = data_receiver.GetBatteryPercentage();
         double distance_mm = data_receiver.GetDistanceMm();

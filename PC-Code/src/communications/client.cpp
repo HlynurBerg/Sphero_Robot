@@ -96,6 +96,15 @@ void TCPHandler::ParseData(const std::string& data) {
     }
 }
 
+void TCPHandler::SendData(const std::string& data) {
+    boost::system::error_code error;
+    socket_.write_some(boost::asio::buffer(data), error);
+
+    if (error) {
+        std::cerr << "Error while sending data: " << error.message() << std::endl;
+    }
+}
+
 UDPHandler::UDPHandler(const std::string& host, int port)
     : io_service_(), socket_(io_service_), remote_endpoint_(boost::asio::ip::address::from_string(host), port) {
     socket_.open(boost::asio::ip::udp::v4());
@@ -114,7 +123,8 @@ std::string UDPHandler::ReceiveBase64Frame() {
     return {receive_buffer.data(), receive_length};
 }
 
-//TODO: if time: use boost base64 decoding instead of this custom implementation made by AI (ChatGPT)
+// TODO: use boost base64 decoding instead of this custom implementation
+// Made with partial use of AI (ChatGPT)
 std::string UDPHandler::Base64Decode(const std::string& encoded_string) {
     std::string decoded_string;
     std::vector<int> base64_index_map(256, -1);

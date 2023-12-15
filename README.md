@@ -6,8 +6,8 @@ The system utilizes a combination of PC-based control software and Raspberry Pi-
 I takes advantage of the Sphero SDK to enable real-time control of the robot, and the OpenCV library to process video data from the Raspberry Pi camera. With the use of TOF distance sensors, the robot is able to detect obstacles and stop automatically. It is also able to track a specified color and follow it.
 
 ## System Requirements 
-- Windows with SDL (Simple DirectMedia Layer), boost and opencv library.
-- Raspberry Pi with Python 3.9, and necessary libraries (cv2, imutils, numpy, etc.).
+- Windows with SDL (Simple DirectMedia Layer), boost and opencv library (installed through vcpkg).
+- Raspberry Pi Zero with Python 3.9, and necessary libraries (cv2, imutils, numpy, etc.).
 
 ## Installation
 - Clone the repository 
@@ -18,7 +18,6 @@ I takes advantage of the Sphero SDK to enable real-time control of the robot, an
 ## Usage
 - Execute server.py locally on the Rpi connected to the RVR to initiate server functionalities and video streaming.
 - Run main.cpp on the PC to start the control interface.
-- ~~x and z keybindings for either manual or autonomous steering~~
 - Control the robot using the both the GUI interface and the SDL interface.
 - Change between manual and autonomous steering through the GUI interface
 
@@ -39,6 +38,10 @@ I takes advantage of the Sphero SDK to enable real-time control of the robot, an
 
 ### Testing module
 - mock_server.hpp: Implements a mock server for testing, capable of handling both TCP and UDP connections.
+- client_tester.cpp: Implements a test suite for the client module, including tests for TCP and UDP connections.
+- color_tracking_tests.cpp: Implements a test suite for the color tracking algorithm.
+- motorcontroller_tests.cpp: Implements a test suite for the motor controller module.
+- JSON_tester.cpp: Implements a test suite for the JSON parser module.
 
 ### Control module
 - motorcontroller.hpp: Defines a class for controlling the motor movements of the robot, including functions for normalizing belt speeds and handling user input.

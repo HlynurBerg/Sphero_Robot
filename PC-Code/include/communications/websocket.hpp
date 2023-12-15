@@ -8,7 +8,6 @@
 #include <mutex>
 #include <chrono>
 #include <nlohmann/json.hpp>
-
 #include "sensors/sensor_processing.hpp"
 
 namespace beast = boost::beast;
@@ -112,7 +111,6 @@ private:
         }
     }
 
-    // Function to handle WebSocket messages
     void HandleWebSocketMessage(const std::string& message) {
         try {
             auto j = nlohmann::json::parse(message);
@@ -158,8 +156,6 @@ public:
         for (auto& session : sessions_) {
             session->SendBase64VideoFrame(base64_frame);
         }
-
-        //std::cout << "Broadcasted video frame to " << sessions_.size() << " clients." << std::endl;
     }
 
 private:

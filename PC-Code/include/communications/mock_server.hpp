@@ -68,7 +68,7 @@ public:
     MockTCPServer(unsigned short port)
         : io_service_(), acceptor_(io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {
         std::cout << "MockTCPServer constructor called" << std::endl;
-        server_thread_ = std::thread([this] { this->run(); });
+        server_thread_ = std::thread([this] { this->Run(); });
     }
 
     ~MockTCPServer() {
@@ -79,12 +79,12 @@ public:
         }
     }
 
-    bool is_accepting() const {
+    bool IsAccepting() const {
         return acceptor_.is_open();
     }
 
 private:
-    void run() {
+    void Run() {
         try {
             boost::asio::ip::tcp::socket socket(io_service_);
             acceptor_.accept(socket);

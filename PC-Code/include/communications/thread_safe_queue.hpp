@@ -1,7 +1,7 @@
 #ifndef SPHERO_ROBOT_THREAD_SAFE_QUEUE_HPP
 #define SPHERO_ROBOT_THREAD_SAFE_QUEUE_HPP
 
-//reference: https://stackoverflow.com/questions/15278343/c11-thread-safe-queue
+// reference: https://stackoverflow.com/questions/15278343/c11-thread-safe-queue
 // https://www.codeproject.com/Articles/5281878/Producer-Consumer-Queues-in-Cplusplus
 
 #include <queue>

@@ -2,7 +2,7 @@
 #define SPHERO_ROBOT_MOTORCONTROLLER_HPP
 
 #include <SDL.h>
-#include <cmath> //for absolute value function in NormalizeBelts
+#include <cmath>
 #include "sensors/sensor_processing.hpp"
 
 class TankSteering {

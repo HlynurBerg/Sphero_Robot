@@ -15,24 +15,18 @@
 class TCPHandler {
 public:
     TCPHandler(const std::string& host, int port);
-    void sendMessage(const std::string& message);
     static void HandleControlling(TankSteering& steer, std::mutex& steer_mutex);
     void Connect();
-    bool isConnected() const;
     void UpdateData();
     double GetBatteryPercentage() const;
     double GetDistanceMm() const;
     double GetSpeedY() const;
     void ParseData(const std::string& data);
 
-    void SendData(const std::string& data) {
-        boost::system::error_code error;
-        socket_.write_some(boost::asio::buffer(data), error);
-
-        if (error) {
-            std::cerr << "Error while sending data: " << error.message() << std::endl;
-        }
-    }
+    // Used for unit testing
+    bool isConnected() const;
+    void sendMessage(const std::string& message);
+    void SendData(const std::string& data);
 
 private:
     boost::asio::io_service io_service_;
@@ -49,10 +43,12 @@ private:
 class UDPHandler {
 public:
     UDPHandler(const std::string& host, int port);
-    void Handshake(const std::string& message);
 
     std::string ReceiveBase64Frame();
     std::string Base64Decode(const std::string &encoded_string);
+
+    // Used for unit testing
+    void Handshake(const std::string& message);
 
 private:
     boost::asio::io_service io_service_;

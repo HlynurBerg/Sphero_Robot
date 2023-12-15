@@ -30,7 +30,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
-find_package(Threads REQUIRED)
 
 
 target_link_libraries(main PRIVATE

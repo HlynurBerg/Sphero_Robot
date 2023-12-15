@@ -4,7 +4,7 @@
 
 TEST_CASE("Color Tracking Algorithm", "[ColorTracking]") {
     SECTION("Target Color Present") {
-        cv::Mat image = cv::imread("yellow_ball.jpg");
+        cv::Mat image = cv::imread("yellow_ball.jpg"); // This image is generated from AI (ChatGPT / Dall-E)
         REQUIRE_FALSE(image.empty()); // Check if the image was loaded correctly
 
         cv::Scalar lower_bound(10, 100, 150);
@@ -15,6 +15,7 @@ TEST_CASE("Color Tracking Algorithm", "[ColorTracking]") {
         REQUIRE(result.second == true); // Check if the object was detected
         // it doesnt matter what the result value is as long as we get a valid result
     }
+
     /* optional tests if we have time
     SECTION("No Target Color") {
         cv::Mat image = cv::imread("cmake-build-debug/PC-Code/tests/Ball_Yellow.png");
