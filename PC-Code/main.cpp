@@ -40,16 +40,16 @@ int main(int argc, char *argv[]) {
     std::atomic<bool> enable_color_tracking(false);
     std::atomic<float> max_speed(0.3f);
 
-    // Creating threads
     TankSteering steer;
     std::mutex steer_mutex;
 
-    std::thread steering_thread([&]() {
+    // Creating jthreads as for C++20
+    std::jthread steering_thread([&]() {
         HandleControlling(std::ref(steer), std::ref(steer_mutex));
     });
 
     // producer_thread receives undecoded base64 video frames and pushes them to the frameQueue
-    std::thread producer_thread([&]() {
+    std::jthread producer_thread([&]() {
         while (true) {
             auto frame = std::make_shared<std::string>(udp_handler.ReceiveBase64Frame());
             frame_queue_for_machine_vision.PushFrame(frame);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     std::pair<float, bool> result;
 
-    std::thread machine_vision_thread([&]() {
+    std::jthread machine_vision_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
         while (true) {
             frame_queue_for_machine_vision.WaitAndPopFrame(base64_frame);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     tcp::endpoint endpoint(tcp::v4(), 8080);
     WebSocketServer wsServer(ioc, endpoint, data_receiver, enable_color_tracking, max_speed);
 
-    std::thread video_thread([&]() {
+    std::jthread video_thread([&]() {
         std::shared_ptr<std::string> base64_frame;
         while (true) {
             frame_queue_for_video_thread.WaitAndPopFrame(base64_frame);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     });
 
     // Run the io_context in a separate thread
-    std::thread websocket_thread([&ioc](){ ioc.run(); });
+    std::jthread websocket_thread([&ioc](){ ioc.run(); });
 
     // Main loop now only handles window events
     bool run_loop = true;
@@ -147,21 +147,5 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(win);
     SDL_Quit();
 
-    //Joining threads before closing program
-    if (producer_thread.joinable()) {
-        producer_thread.join();
-    }
-    if (machine_vision_thread.joinable()) {
-        machine_vision_thread.join();
-    }
-    if (steering_thread.joinable()) {
-        steering_thread.join();
-    }
-    if (video_thread.joinable()) {
-        video_thread.join();
-    }
-    if (websocket_thread.joinable()) {
-        websocket_thread.join();
-    }
     return 0;
 }
